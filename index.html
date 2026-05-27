@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Проявочная №06 – С днём рождения!</title>
+    <style>
+        /* Базовые сбросы и фон */
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #1A0000;
+            font-family: 'Courier New', monospace;
+            color: #E0E0E0;
+        }
+
+        #lab {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 30%, #330000, #1A0000);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Сканлайны */
+        #lab::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(0deg, rgba(0,0,0,0) 0px, rgba(0,0,0,0) 2px, rgba(0,0,0,0.15) 4px);
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        /* Шум */
+        #lab::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyBAMAAADsEZWCAAAAGFBMVEUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABf39xwAAAACHRSTlMzMzMzMzMzM85JBgUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAwSURBVDjLY2AYBaNgFIyCgQMjAwMDA4OAgYEBQsBkZGRgYGBg4GZmZmBgYGBkYGBgAAAxMgEbxgHm8AAAAABJRU5ErkJggg==');
+            opacity: 0.08;
+            animation: grain 0.8s steps(10) infinite;
+            pointer-events: none;
+            z-index: 11;
+        }
+
+        @keyframes grain {
+            0% { background-position: 0 0; }
+            100% { background-position: 100% 100%; }
+        }
+
+        /* Консоль вывода */
+        #terminal-output {
+            position: absolute;
+            top: 10%;
+            left: 10%;
+            right: 10%;
+            font-size: clamp(12px, 1.8vw, 16px);
+            color: #9ACD9E;
+            z-index: 12;
+            white-space: pre-wrap;
+            line-height: 1.6;
+            text-shadow: 0 0 4px #9ACD9E;
+            pointer-events: none;
+        }
+
+        /* Контейнер кадров */
+        #frames-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            z-index: 13;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .frame {
+            position: absolute;
+            opacity: 0;
+            filter: brightness(0) contrast(1.8);
+            transition: filter 2s ease-out, opacity 0.8s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            pointer-events: none;
+        }
+
+        .frame.developed {
+            filter: brightness(1) contrast(1);
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .frame img {
+            max-width: 70vw;
+            max-height: 50vh;
+            border: 4px solid #4A2C2C;
+            box-shadow: 0 0 30px #330000;
+            background: #2A1A1A; /* цвет плейсхолдера */
+            object-fit: cover;
+        }
+
+        .verse {
+            color: #FFB347;
+            font-family: 'Playfair Display', 'Times New Roman', serif;
+            font-style: italic;
+            font-size: clamp(14px, 2.2vw, 20px);
+            text-shadow: 0 0 8px #FFB347, 0 0 15px #FFB347;
+            margin-top: 0.8em;
+            white-space: pre-wrap;
+            line-height: 1.5;
+            opacity: 0;
+            transition: opacity 2s ease;
+        }
+
+        .frame.developed .verse {
+            opacity: 1;
+        }
+
+        /* Финальный портрет */
+        #final-portrait {
+            position: absolute;
+            z-index: 14;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        #final-portrait.visible {
+            display: flex;
+        }
+
+        #final-portrait img {
+            max-width: 65vw;
+            max-height: 45vh;
+            border: 5px solid #FFB347;
+            box-shadow: 0 0 50px #FFB347, 0 0 20px #4A2C2C;
+            background: #2A1A1A;
+        }
+
+        .greeting {
+            color: #FFB347;
+            font-family: 'Fira Sans Condensed', 'Arial', sans-serif;
+            font-weight: bold;
+            font-size: clamp(18px, 3vw, 28px);
+            text-shadow: 0 0 15px #FFB347;
+            margin-top: 0.5em;
+            letter-spacing: 1px;
+        }
+
+        /* Вентиль */
+        #valve-container {
+            position: absolute;
+            bottom: 8%;
+            right: 8%;
+            z-index: 20;
+            cursor: pointer;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #valve-container.active {
+            display: flex;
+        }
+
+        #valve {
+            width: 70px;
+            height: 70px;
+            position: relative;
+        }
+
+        .gauge {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 3px solid #FFB347;
+            background: radial-gradient(circle at 30% 30%, #4A2C2C, #1A0000);
+            box-shadow: 0 0 20px #FFB347, inset 0 0 10px #000;
+            position: absolute;
+            top: 5px;
+            left: 5px;
+        }
+
+        .gauge::after {
+            content: "";
+            position: absolute;
+            width: 4px;
+            height: 20px;
+            background: #FFB347;
+            bottom: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            transform-origin: bottom center;
+            transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.3, 1);
+        }
+
+        .handle {
+            position: absolute;
+            width: 25px;
+            height: 25px;
+            background: #FF3333;
+            border-radius: 50%;
+            top: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            box-shadow: 0 0 15px #FF3333, 0 0 30px #FF0000;
+            cursor: pointer;
+            transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.3, 1);
+        }
+
+        .handle.turned {
+            transform: translateX(-50%) rotate(90deg);
+        }
+
+        .hint {
+            color: #FFB347;
+            font-size: 12px;
+            margin-top: 0.3em;
+            text-shadow: 0 0 6px #FFB347;
+            letter-spacing: 2px;
+        }
+
+        /* Красная лампа */
+        #red-lamp {
+            position: absolute;
+            top: 5%;
+            right: 5%;
+            width: 20px;
+            height: 20px;
+            background: #FF3333;
+            border-radius: 50%;
+            box-shadow: 0 0 25px #FF3333, 0 0 50px #FF0000;
+            z-index: 25;
+            cursor: pointer;
+            animation: pulse-lamp 2s infinite;
+        }
+
+        @keyframes pulse-lamp {
+            0%, 100% { box-shadow: 0 0 25px #FF3333, 0 0 50px #FF0000; }
+            50% { box-shadow: 0 0 45px #FF3333, 0 0 80px #FF0000; }
+        }
+
+        /* Хэштег пасхалка */
+        #easter-hashtag {
+            position: absolute;
+            bottom: 15%;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #9ACD9E;
+            font-size: 14px;
+            text-shadow: 0 0 8px #9ACD9E;
+            z-index: 30;
+            display: none;
+            white-space: nowrap;
+        }
+
+        /* Адаптивность */
+        @media (max-width: 600px) {
+            #valve-container {
+                bottom: 5%;
+                right: 5%;
+            }
+            #valve {
+                width: 50px;
+                height: 50px;
+            }
+            .gauge {
+                width: 45px;
+                height: 45px;
+            }
+            .handle {
+                width: 20px;
+                height: 20px;
+                top: -5px;
+            }
+            #red-lamp {
+                top: 3%;
+                right: 3%;
+                width: 15px;
+                height: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="lab">
+        <!-- Терминальные строки -->
+        <div id="terminal-output"></div>
+
+        <!-- Контейнер трёх кадров -->
+        <div id="frames-container">
+            <div class="frame" id="frame1">
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='250' viewBox='0 0 400 250'%3E%3Crect width='400' height='250' fill='%232A1A1A'/%3E%3Ctext x='200' y='125' text-anchor='middle' fill='%23FFB347' font-size='16' font-family='monospace'%3EФото 1: пейзаж%3C/text%3E%3C/svg%3E" alt="Кадр 1 - пейзаж из путешествия">
+                <p class="verse"></p>
+            </div>
+            <div class="frame" id="frame2">
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='250' viewBox='0 0 400 250'%3E%3Crect width='400' height='250' fill='%232A1A1A'/%3E%3Ctext x='200' y='125' text-anchor='middle' fill='%23FFB347' font-size='16' font-family='monospace'%3EФото 2: берёзы%3C/text%3E%3C/svg%3E" alt="Кадр 2 - берёзовая роща">
+                <p class="verse"></p>
+            </div>
+            <div class="frame" id="frame3">
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='250' viewBox='0 0 400 250'%3E%3Crect width='400' height='250' fill='%232A1A1A'/%3E%3Ctext x='200' y='125' text-anchor='middle' fill='%23FFB347' font-size='16' font-family='monospace'%3EФото 3: фотоаппарат%3C/text%3E%3C/svg%3E" alt="Кадр 3 - штатив или билеты">
+                <p class="verse"></p>
+            </div>
+        </div>
+
+        <!-- Финальный портрет (изначально скрыт) -->
+        <div id="final-portrait">
+            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='350' height='350' viewBox='0 0 350 350'%3E%3Crect width='350' height='350' fill='%232A1A1A'/%3E%3Ctext x='175' y='175' text-anchor='middle' fill='%23FFB347' font-size='18' font-family='monospace'%3EПортрет именинника%3C/text%3E%3C/svg%3E" alt="Именинник">
+            <p class="verse" id="final-verse"></p>
+            <p class="greeting" id="final-greeting"></p>
+        </div>
+
+        <!-- Вентиль -->
+        <div id="valve-container">
+            <div id="valve">
+                <div class="gauge"></div>
+                <div class="handle"></div>
+            </div>
+            <p class="hint">ПОДАТЬ ГАЗ</p>
+        </div>
+
+        <!-- Красная лампа -->
+        <div id="red-lamp"></div>
+
+        <!-- Хэштег пасхалка -->
+        <div id="easter-hashtag">#нежалеюнезовунеплачу_нодалипремию</div>
+    </div>
+
+    <script>
+        (function() {
+            // Стихи для каждого кадра
+            const verses = {
+                frame1: "«Я по первому снегу бреду,\nСердце греет попутный мой газ.\nСквозь видоискатель я в даль поведу\nВсю печаль, что скопилась за раз.»",
+                frame2: "«Не бродить, не мять в кустах багряных\nЛебеды и не искать следа.\nТолько голубой огонь в туманах\nОбнимает, словно в те года.»",
+                frame3: "«В этом мире я только прохожий,\nОбъективом рисую закат.\nТы не плачь, мой товарищ хороший,\nВедь у нас – скидка на корпоративный оклад.»",
+                final: "«С днём рождения, лирик газпромовских трасс!\nПусть в кадрах не будет ни грусти, ни тьмы.\nТвой внутренний газ – это творческий ас,\nА Есенин бы точно сказал: \"Даришь свет из сурьмы\".»"
+            };
+            const greetingText = "[Имя], с днём рождения! Пусть проявляются только лучшие моменты.";
+
+            // DOM элементы
+            const terminal = document.getElementById('terminal-output');
+            const frame1 = document.getElementById('frame1');
+            const frame2 = document.getElementById('frame2');
+            const frame3 = document.getElementById('frame3');
+            const finalPortrait = document.getElementById('final-portrait');
+            const finalVerse = document.getElementById('final-verse');
+            const finalGreeting = document.getElementById('final-greeting');
+            const valveContainer = document.getElementById('valve-container');
+            const handle = document.querySelector('.handle');
+            const redLamp = document.getElementById('red-lamp');
+            const easterHashtag = document.getElementById('easter-hashtag');
+
+            // Звуковой контекст для шипения газа
+            let audioCtx = null;
+
+            function initAudio() {
+                if (!audioCtx) {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+            }
+
+            function playGasSound() {
+                initAudio();
+                const duration = 0.8;
+                const sampleRate = audioCtx.sampleRate;
+                const buffer = audioCtx.createBuffer(1, duration * sampleRate, sampleRate);
+                const data = buffer.getChannelData(0);
+                // Генерация белого шума с фильтрацией низких частот (имитация шипения)
+                for (let i = 0; i < data.length; i++) {
+                    data[i] = (Math.random() * 2 - 1) * 0.3;
+                }
+                const source = audioCtx.createBufferSource();
+                source.buffer = buffer;
+                const filter = audioCtx.createBiquadFilter();
+                filter.type = 'lowpass';
+                filter.frequency.setValueAtTime(1000, audioCtx.currentTime);
+                filter.frequency.exponentialRampToValueAtTime(300, audioCtx.currentTime + 0.4);
+                const gainNode = audioCtx.createGain();
+                gainNode.gain.setValueAtTime(0.6, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+                source.connect(filter);
+                filter.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                source.start();
+                source.stop(audioCtx.currentTime + duration);
+            }
+
+            // Посимвольный вывод текста в терминал
+            function typeText(element, text, speed = 50) {
+                return new Promise(resolve => {
+                    let i = 0;
+                    element.textContent = ''; // очищаем перед набором
+                    function type() {
+                        if (i < text.length) {
+                            element.textContent += text.charAt(i);
+                            i++;
+                            setTimeout(type, speed);
+                        } else {
+                            resolve();
+                        }
+                    }
+                    type();
+                });
+            }
+
+            // Задержка
+            function delay(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+
+            // Показать кадр с проявкой
+            function developFrame(frame, verseElement, verseText) {
+                frame.classList.add('developed');
+                verseElement.textContent = verseText; // стих появляется сразу, но плавно благодаря transition на .verse
+            }
+
+            // Скрыть все кадры (кроме финального)
+            function hideAllFrames() {
+                [frame1, frame2, frame3].forEach(f => f.classList.remove('developed'));
+            }
+
+            // Главный сценарий
+            async function runScenario() {
+                // Автозагрузка терминала
+                await typeText(terminal, "> Загрузка реактивов: OK", 40);
+                await delay(400);
+                await typeText(terminal, "\n> Давление лирики: 6.0 МПа", 40);
+                await delay(400);
+                await typeText(terminal, "\n> Концентрация иронии: 99.8%", 40);
+                await delay(400);
+                await typeText(terminal, "\n> Газ подан. Цикл проявки запущен...", 40);
+                await delay(800);
+                await typeText(terminal, "\n> Инициализация кадра 1/3...", 40);
+                await delay(600);
+
+                // Проявка кадра 1
+                developFrame(frame1, frame1.querySelector('.verse'), verses.frame1);
+                await delay(4500); // даём насладиться
+
+                // Скрываем первый, показываем второй
+                hideAllFrames();
+                await typeText(terminal, "\n> Кадр 2/3...", 40);
+                developFrame(frame2, frame2.querySelector('.verse'), verses.frame2);
+                await delay(4500);
+
+                // Третий кадр
+                hideAllFrames();
+                await typeText(terminal, "\n> Кадр 3/3...", 40);
+                developFrame(frame3, frame3.querySelector('.verse'), verses.frame3);
+                await delay(4500);
+
+                // После трёх кадров прячем их и показываем вентиль
+                hideAllFrames();
+                terminal.textContent += '\n> Ожидание ручного воздействия...';
+                valveContainer.classList.add('active');
+            }
+
+            // Обработчик клика по вентилю
+            async function onValveClick() {
+                if (handle.classList.contains('turned')) return; // уже повёрнут
+                handle.classList.add('turned');
+                playGasSound();
+
+                // Вспышка
+                const lab = document.getElementById('lab');
+                lab.style.transition = 'background 0.2s';
+                lab.style.background = '#FFFFFF';
+                await delay(200);
+                lab.style.background = 'radial-gradient(circle at 20% 30%, #330000, #1A0000)';
+                lab.style.transition = '';
+
+                // Прячем вентиль и показываем финальный портрет
+                valveContainer.classList.remove('active');
+                finalPortrait.classList.add('visible');
+                finalVerse.textContent = verses.final;
+                finalGreeting.textContent = greetingText;
+            }
+
+            // Пасхалка: красная лампа
+            function onLampClick() {
+                terminal.textContent += '\nERR: избыток лирики. Переключите режим на «иронию».';
+            }
+
+            // Пасхалка: двойной клик по портрету
+            function onPortraitDblClick(e) {
+                easterHashtag.style.display = 'block';
+                setTimeout(() => { easterHashtag.style.display = 'none'; }, 4000);
+            }
+
+            // Пасхалка: тряска телефона
+            function onDeviceShake() {
+                // Визуально разбрызгиваем "капли" – создаём несколько частиц
+                for (let i = 0; i < 12; i++) {
+                    const drop = document.createElement('div');
+                    drop.style.position = 'absolute';
+                    drop.style.width = '4px';
+                    drop.style.height = '4px';
+                    drop.style.background = '#FFB347';
+                    drop.style.borderRadius = '50%';
+                    drop.style.boxShadow = '0 0 6px #FFB347';
+                    drop.style.left = Math.random() * 100 + '%';
+                    drop.style.top = Math.random() * 100 + '%';
+                    drop.style.zIndex = '40';
+                    drop.style.pointerEvents = 'none';
+                    document.getElementById('lab').appendChild(drop);
+                    setTimeout(() => drop.remove(), 1000);
+                }
+                // Лёгкий звук бульканья (короткий тон)
+                initAudio();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(200 + Math.random() * 200, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.3);
+            }
+
+            // Обработчик тряски (акселерометр)
+            let lastShakeTime = 0;
+            function handleMotionEvent(event) {
+                const acc = event.accelerationIncludingGravity;
+                if (!acc) return;
+                const magnitude = Math.sqrt(acc.x * acc.x + acc.y * acc.y + acc.z * acc.z);
+                if (magnitude > 25 && Date.now() - lastShakeTime > 1000) {
+                    lastShakeTime = Date.now();
+                    onDeviceShake();
+                }
+            }
+
+            // Привязка событий
+            document.getElementById('valve').addEventListener('click', onValveClick);
+            redLamp.addEventListener('click', onLampClick);
+            document.getElementById('final-portrait').addEventListener('dblclick', onPortraitDblClick);
+            window.addEventListener('devicemotion', handleMotionEvent, true);
+
+            // Запуск сценария после загрузки
+            window.addEventListener('load', () => {
+                runScenario();
+            });
+        })();
+    </script>
+</body>
+</html>
