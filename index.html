@@ -1,371 +1,590 @@
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Проявочная №06 – С днём рождения!</title>
+    <title>Обновление OS "V.V.V." – System Update</title>
     <style>
-        /* Базовые сбросы и фон */
-        body, html {
+        :root {
+            --matrix-green: #00ff41;
+            --matrix-green-dim: #008f22;
+            --bg-terminal: #0d0d0d;
+            --text-glow: #00ff41;
+        }
+
+        * {
             margin: 0;
             padding: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            background: #1A0000;
-            font-family: 'Courier New', monospace;
-            color: #E0E0E0;
+            box-sizing: border-box;
         }
 
-        #lab {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle at 20% 30%, #330000, #1A0000);
-            display: flex;
-            justify-content: center;
-            align-items: center;
+        body {
+            background: #000;
+            font-family: 'Courier New', 'Fira Code', monospace;
+            overflow-x: hidden;
+            min-height: 100vh;
         }
 
-        /* Сканлайны */
-        #lab::after {
-            content: "";
-            position: absolute;
+        .matrix-bg {
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: repeating-linear-gradient(0deg, rgba(0,0,0,0) 0px, rgba(0,0,0,0) 2px, rgba(0,0,0,0.15) 4px);
+            z-index: 0;
             pointer-events: none;
+        }
+
+        canvas#matrixCanvas {
+            display: block;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 0;
+        }
+
+        .terminal-wrapper {
+            position: relative;
             z-index: 10;
-        }
-
-        /* Шум */
-        #lab::before {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyBAMAAADsEZWCAAAAGFBMVEUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABf39xwAAAACHRSTlMzMzMzMzMzM85JBgUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAwSURBVDjLY2AYBaNgFIyCgQMjAwMDA4OAgYEBQsBkZGRgYGBg4GZmZmBgYGBkYGBgAAAxMgEbxgHm8AAAAABJRU5ErkJggg==');
-            opacity: 0.08;
-            animation: grain 0.8s steps(10) infinite;
-            pointer-events: none;
-            z-index: 11;
-        }
-
-        @keyframes grain {
-            0% { background-position: 0 0; }
-            100% { background-position: 100% 100%; }
-        }
-
-        /* Консоль вывода */
-        #terminal-output {
-            position: absolute;
-            top: 10%;
-            left: 10%;
-            right: 10%;
-            font-size: clamp(12px, 1.8vw, 16px);
-            color: #9ACD9E;
-            z-index: 12;
-            white-space: pre-wrap;
-            line-height: 1.6;
-            text-shadow: 0 0 4px #9ACD9E;
-            pointer-events: none;
-        }
-
-        /* Контейнер кадров */
-        #frames-container {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            z-index: 13;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            min-height: 100vh;
             display: flex;
+            flex-direction: column;
             justify-content: center;
-            align-items: center;
         }
 
-        .frame {
-            position: absolute;
-            opacity: 0;
-            filter: brightness(0) contrast(1.8);
-            transition: filter 2s ease-out, opacity 0.8s ease;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            pointer-events: none;
-        }
-
-        .frame.developed {
-            filter: brightness(1) contrast(1);
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        .frame img {
-            max-width: 70vw;
-            max-height: 50vh;
-            border: 4px solid #4A2C2C;
-            box-shadow: 0 0 30px #330000;
-            background: #2A1A1A; /* цвет плейсхолдера */
-            object-fit: cover;
-        }
-
-        .verse {
-            color: #FFB347;
-            font-family: 'Playfair Display', 'Times New Roman', serif;
-            font-style: italic;
-            font-size: clamp(14px, 2.2vw, 20px);
-            text-shadow: 0 0 8px #FFB347, 0 0 15px #FFB347;
-            margin-top: 0.8em;
-            white-space: pre-wrap;
-            line-height: 1.5;
-            opacity: 0;
-            transition: opacity 2s ease;
-        }
-
-        .frame.developed .verse {
-            opacity: 1;
-        }
-
-        /* Финальный портрет */
-        #final-portrait {
-            position: absolute;
-            z-index: 14;
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-        }
-
-        #final-portrait.visible {
-            display: flex;
-        }
-
-        #final-portrait img {
-            max-width: 65vw;
-            max-height: 45vh;
-            border: 5px solid #FFB347;
-            box-shadow: 0 0 50px #FFB347, 0 0 20px #4A2C2C;
-            background: #2A1A1A;
-        }
-
-        .greeting {
-            color: #FFB347;
-            font-family: 'Fira Sans Condensed', 'Arial', sans-serif;
-            font-weight: bold;
-            font-size: clamp(18px, 3vw, 28px);
-            text-shadow: 0 0 15px #FFB347;
-            margin-top: 0.5em;
-            letter-spacing: 1px;
-        }
-
-        /* Вентиль */
-        #valve-container {
-            position: absolute;
-            bottom: 8%;
-            right: 8%;
-            z-index: 20;
-            cursor: pointer;
-            display: none;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        #valve-container.active {
-            display: flex;
-        }
-
-        #valve {
-            width: 70px;
-            height: 70px;
+        .terminal {
+            background: #000000;
+            border: 1px solid var(--matrix-green-dim);
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 0 30px rgba(0, 255, 65, 0.2), 0 0 60px rgba(0, 0, 0, 0.9);
             position: relative;
+            z-index: 5;
         }
 
-        .gauge {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            border: 3px solid #FFB347;
-            background: radial-gradient(circle at 30% 30%, #4A2C2C, #1A0000);
-            box-shadow: 0 0 20px #FFB347, inset 0 0 10px #000;
-            position: absolute;
-            top: 5px;
-            left: 5px;
+        .terminal-header {
+            color: var(--matrix-green);
+            font-size: 18px;
+            letter-spacing: 3px;
+            text-align: center;
+            margin-bottom: 20px;
+            text-shadow: 0 0 15px var(--matrix-green), 0 0 30px var(--matrix-green);
+            animation: flicker 3s infinite;
+            line-height: 1.4;
         }
 
-        .gauge::after {
-            content: "";
-            position: absolute;
-            width: 4px;
-            height: 20px;
-            background: #FFB347;
-            bottom: 8px;
-            left: 50%;
-            transform: translateX(-50%);
-            transform-origin: bottom center;
-            transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.3, 1);
+        @keyframes flicker {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            92% {
+                opacity: 1;
+            }
+
+            93% {
+                opacity: 0.8;
+            }
+
+            94% {
+                opacity: 1;
+            }
+
+            96% {
+                opacity: 0.7;
+            }
+
+            97% {
+                opacity: 1;
+            }
         }
 
-        .handle {
-            position: absolute;
-            width: 25px;
-            height: 25px;
-            background: #FF3333;
-            border-radius: 50%;
-            top: -8px;
-            left: 50%;
-            transform: translateX(-50%);
-            box-shadow: 0 0 15px #FF3333, 0 0 30px #FF0000;
+        .log-line {
+            color: #ffffff;
+            font-size: 24px;
+            line-height: 1.8;
+            opacity: 0;
+            transform: translateX(-10px);
+            transition: opacity 0.3s, transform 0.3s;
+            display: flex;
+            align-items: center;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .log-line.visible {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .log-line .ok-indicator {
+            color: #00ff41;
+            font-weight: bold;
+            margin-left: 8px;
+            text-shadow: 0 0 10px #00ff41, 0 0 20px #00ff41;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .log-line .ok-indicator.show {
+            opacity: 1;
+        }
+
+        .progress-bar-container {
+            margin: 20px 0;
+            height: 4px;
+            background: #1a1a1a;
+            border-radius: 2px;
+            overflow: hidden;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+
+        .progress-bar-container.visible {
+            opacity: 1;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: var(--matrix-green);
+            box-shadow: 0 0 15px var(--matrix-green);
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+
+        .activate-btn {
+            display: block;
+            margin: 30px auto 0;
+            padding: 16px 40px;
+            background: transparent;
+            border: 2px solid var(--matrix-green);
+            color: var(--matrix-green);
+            font-family: 'Courier New', monospace;
+            font-size: 20px;
+            letter-spacing: 3px;
             cursor: pointer;
-            transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.3, 1);
+            text-shadow: 0 0 15px var(--matrix-green);
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.3), inset 0 0 20px rgba(0, 255, 65, 0.1);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease, background 0.3s, color 0.3s;
+            border-radius: 4px;
+            text-align: center;
         }
 
-        .handle.turned {
-            transform: translateX(-50%) rotate(90deg);
+        .activate-btn.visible {
+            opacity: 1;
+            transform: translateY(0);
         }
 
-        .hint {
-            color: #FFB347;
-            font-size: 12px;
-            margin-top: 0.3em;
-            text-shadow: 0 0 6px #FFB347;
-            letter-spacing: 2px;
-        }
-
-        /* Красная лампа */
-        #red-lamp {
-            position: absolute;
-            top: 5%;
-            right: 5%;
-            width: 20px;
-            height: 20px;
-            background: #FF3333;
-            border-radius: 50%;
-            box-shadow: 0 0 25px #FF3333, 0 0 50px #FF0000;
-            z-index: 25;
+        .activate-btn:hover {
+            background: var(--matrix-green);
+            color: #000;
+            box-shadow: 0 0 50px rgba(0, 255, 65, 0.8);
             cursor: pointer;
-            animation: pulse-lamp 2s infinite;
         }
 
-        @keyframes pulse-lamp {
-            0%, 100% { box-shadow: 0 0 25px #FF3333, 0 0 50px #FF0000; }
-            50% { box-shadow: 0 0 45px #FF3333, 0 0 80px #FF0000; }
+        .activate-btn:active {
+            transform: scale(0.97);
         }
 
-        /* Хэштег пасхалка */
-        #easter-hashtag {
-            position: absolute;
-            bottom: 15%;
-            left: 50%;
-            transform: translateX(-50%);
-            color: #9ACD9E;
-            font-size: 14px;
-            text-shadow: 0 0 8px #9ACD9E;
-            z-index: 30;
+        .cursor-blink {
+            display: inline-block;
+            width: 10px;
+            height: 20px;
+            background: var(--matrix-green);
+            margin-left: 4px;
+            animation: blink-cursor 0.8s infinite;
+            vertical-align: middle;
+        }
+
+        @keyframes blink-cursor {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0;
+            }
+        }
+
+        /* Страница 2 */
+        .page2 {
             display: none;
-            white-space: nowrap;
+            position: relative;
+            z-index: 10;
+            min-height: 100vh;
+            background: rgba(0, 0, 0, 0.9);
+            color: #fff;
+            text-align: center;
+            padding: 40px 20px;
         }
 
-        /* Адаптивность */
+        .page2.active {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .back-link {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: var(--matrix-green);
+            text-decoration: none;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            letter-spacing: 1px;
+            text-shadow: 0 0 10px var(--matrix-green);
+            cursor: pointer;
+            z-index: 30;
+            transition: opacity 0.3s;
+        }
+
+        .back-link:hover {
+            opacity: 0.7;
+            text-decoration: underline;
+        }
+
+        .congrats-title {
+            font-family: 'Courier New', monospace;
+            font-size: clamp(24px, 5vw, 40px);
+            color: #fff;
+            text-shadow: 0 0 20px #fff, 0 0 40px #ffcc00;
+            margin-bottom: 20px;
+            letter-spacing: 2px;
+            line-height: 1.4;
+        }
+
+        .congrats-text {
+            font-family: 'Courier New', monospace;
+            font-size: clamp(16px, 3vw, 22px);
+            color: #e0e0e0;
+            max-width: 700px;
+            line-height: 1.6;
+            margin-bottom: 40px;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        .lens-button {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #444, #111);
+            border: 6px solid #333;
+            box-shadow: 0 0 30px rgba(0, 255, 65, 0.4), 0 10px 30px rgba(0, 0, 0, 0.8), inset 0 5px 15px rgba(0, 0, 0, 0.8);
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            position: relative;
+            margin: 30px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .lens-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 50px rgba(0, 255, 65, 0.8), 0 15px 40px rgba(0, 0, 0, 0.9);
+        }
+
+        .lens-button:active {
+            transform: scale(0.95);
+        }
+
+        .lens-inner {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 40% 40%, #1a1a1a, #000);
+            border: 3px solid #555;
+            box-shadow: inset 0 2px 10px rgba(0, 255, 65, 0.3);
+        }
+
+        .lens-label {
+            color: var(--matrix-green);
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            letter-spacing: 2px;
+            margin-top: 5px;
+            text-shadow: 0 0 8px var(--matrix-green);
+        }
+
+        .easter-gallery {
+            display: none;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 30px;
+            max-width: 900px;
+            padding: 20px;
+        }
+
+        .easter-gallery.open {
+            display: flex;
+        }
+
+        .easter-item {
+            width: 150px;
+            text-align: center;
+            animation: fadeInUp 0.5s ease forwards;
+            opacity: 0;
+        }
+
+        .easter-item:nth-child(1) {
+            animation-delay: 0.1s;
+        }
+
+        .easter-item:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .easter-item:nth-child(3) {
+            animation-delay: 0.3s;
+        }
+
+        .easter-item:nth-child(4) {
+            animation-delay: 0.4s;
+        }
+
+        .easter-item:nth-child(5) {
+            animation-delay: 0.5s;
+        }
+
+        .easter-item:nth-child(6) {
+            animation-delay: 0.6s;
+        }
+
+        .easter-item:nth-child(7) {
+            animation-delay: 0.7s;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .easter-item img {
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 12px;
+            border: 2px solid #444;
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.2);
+            transition: transform 0.3s, box-shadow 0.3s;
+            background: #1a1a1a;
+        }
+
+        .easter-item img:hover {
+            transform: scale(1.08);
+            box-shadow: 0 0 35px rgba(0, 255, 65, 0.6);
+        }
+
+        .easter-caption {
+            color: #ccc;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            margin-top: 8px;
+            text-shadow: 0 0 6px rgba(255, 255, 255, 0.3);
+        }
+
         @media (max-width: 600px) {
-            #valve-container {
-                bottom: 5%;
-                right: 5%;
+            .terminal {
+                padding: 20px 15px;
             }
-            #valve {
-                width: 50px;
-                height: 50px;
+
+            .log-line {
+                font-size: 28px;
             }
-            .gauge {
-                width: 45px;
-                height: 45px;
+
+            .activate-btn {
+                font-size: 16px;
+                padding: 12px 24px;
             }
-            .handle {
-                width: 20px;
-                height: 20px;
-                top: -5px;
+
+            .lens-button {
+                width: 90px;
+                height: 90px;
             }
-            #red-lamp {
-                top: 3%;
-                right: 3%;
-                width: 15px;
-                height: 15px;
+
+            .lens-inner {
+                width: 35px;
+                height: 35px;
+            }
+
+            .easter-item {
+                width: 120px;
+            }
+
+            .easter-item img {
+                width: 120px;
+                height: 120px;
             }
         }
     </style>
 </head>
+
 <body>
-    <div id="lab">
-        <!-- Терминальные строки -->
-        <div id="terminal-output"></div>
+    <canvas id="matrixCanvas"></canvas>
+    <!-- Кнопка разблокировки звука (появляется при загрузке) -->
+    <div id="audio-unlock-overlay" style="
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 100;
+        background: rgba(0, 0, 0, 0.9);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+    ">
+        <div style="
+            color: #00ff41;
+            font-family: 'Courier New', monospace;
+            font-size: 22px;
+            letter-spacing: 2px;
+            text-shadow: 0 0 15px #00ff41;
+            margin-bottom: 20px;
+            text-align: center;
+        ">▸ НАЖМИТЕ ДЛЯ АКТИВАЦИИ ◂</div>
+        <div style="
+            color: #008f22;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            letter-spacing: 1px;
+        "></div>
+    </div>
+    <!-- Страница 1: Терминал -->
+    <div class="terminal-wrapper" id="page1">
+        <div class="terminal">
+            <div class="terminal-header">
+                <h1> <em>Обновление OS "V.V.V."<br></em></h1>
+                <span style="font-size:14px;"> <strong> ver. 4.9 // INIT SEQUENCE </strong></span>
+            </div>
+            <div id="log-container"></div>
+            <div class="progress-bar-container" id="progress-bar-container">
+                <div class="progress-bar-fill" id="progress-bar-fill"></div>
+            </div>
+            <button class="activate-btn" id="activate-btn">
+                <h2><strong> Open OS "V.V.V." ver.4.9 </strong></h2>
+            </button>
+        </div>
+    </div>
 
-        <!-- Контейнер трёх кадров -->
-        <div id="frames-container">
-            <div class="frame" id="frame1">
-                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='250' viewBox='0 0 400 250'%3E%3Crect width='400' height='250' fill='%232A1A1A'/%3E%3Ctext x='200' y='125' text-anchor='middle' fill='%23FFB347' font-size='16' font-family='monospace'%3EФото 1: пейзаж%3C/text%3E%3C/svg%3E" alt="Кадр 1 - пейзаж из путешествия">
-                <p class="verse"></p>
+    <!-- Страница 2: Поздравление -->
+    <div class="page2" id="page2">
+        <a class="back-link" id="back-link">← Вернуться на главную</a>
+        <div class="congrats-title">Добро пожаловать <br> в новый год твоей жизни!</div>
+        <div class="congrats-text">
+            Тебя ждут увлекательные путешествия, новые локации для отдыха, интересные люди,
+            непредсказуемые, но исключительно позитивные события! <br> За плечами много серьезных побед, но впереди ещё больше амбициозных целей. <br> Пусть этот год станет идеальной взлётной полосой перед красивым юбилеем!<br> Итак, пристегните ремни, мы взлетаем!
+        </div>
+        <div class="lens-button" id="lens-button" title="Открыть галерею">
+            <div class="lens-inner"></div>
+        </div>
+        <div class="lens-label">ОБЪЕКТИВ</div>
+        <div class="easter-gallery" id="easter-gallery">
+            <div class="easter-item"><img
+                    src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 150 150'%3E%3Crect width='150' height='150' fill='%23222'/%3E%3Ctext x='75' y='75' text-anchor='middle' fill='%2300ff41' font-size='14' font-family='monospace'%3EПасхалка 1%3C/text%3E%3C/svg%3E"
+                    alt="Easter egg 1">
+                <p class="easter-caption">Надпись 1</p>
             </div>
-            <div class="frame" id="frame2">
-                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='250' viewBox='0 0 400 250'%3E%3Crect width='400' height='250' fill='%232A1A1A'/%3E%3Ctext x='200' y='125' text-anchor='middle' fill='%23FFB347' font-size='16' font-family='monospace'%3EФото 2: берёзы%3C/text%3E%3C/svg%3E" alt="Кадр 2 - берёзовая роща">
-                <p class="verse"></p>
+            <div class="easter-item"><img
+                    src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 150 150'%3E%3Crect width='150' height='150' fill='%23222'/%3E%3Ctext x='75' y='75' text-anchor='middle' fill='%2300ff41' font-size='14' font-family='monospace'%3EПасхалка 2%3C/text%3E%3C/svg%3E"
+                    alt="Easter egg 2">
+                <p class="easter-caption">Надпись 2</p>
             </div>
-            <div class="frame" id="frame3">
-                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='250' viewBox='0 0 400 250'%3E%3Crect width='400' height='250' fill='%232A1A1A'/%3E%3Ctext x='200' y='125' text-anchor='middle' fill='%23FFB347' font-size='16' font-family='monospace'%3EФото 3: фотоаппарат%3C/text%3E%3C/svg%3E" alt="Кадр 3 - штатив или билеты">
-                <p class="verse"></p>
+            <div class="easter-item"><img
+                    src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 150 150'%3E%3Crect width='150' height='150' fill='%23222'/%3E%3Ctext x='75' y='75' text-anchor='middle' fill='%2300ff41' font-size='14' font-family='monospace'%3EПасхалка 3%3C/text%3E%3C/svg%3E"
+                    alt="Easter egg 3">
+                <p class="easter-caption">Надпись 3</p>
+            </div>
+            <div class="easter-item"><img
+                    src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 150 150'%3E%3Crect width='150' height='150' fill='%23222'/%3E%3Ctext x='75' y='75' text-anchor='middle' fill='%2300ff41' font-size='14' font-family='monospace'%3EПасхалка 4%3C/text%3E%3C/svg%3E"
+                    alt="Easter egg 4">
+                <p class="easter-caption">Надпись 4</p>
+            </div>
+            <div class="easter-item"><img
+                    src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 150 150'%3E%3Crect width='150' height='150' fill='%23222'/%3E%3Ctext x='75' y='75' text-anchor='middle' fill='%2300ff41' font-size='14' font-family='monospace'%3EПасхалка 5%3C/text%3E%3C/svg%3E"
+                    alt="Easter egg 5">
+                <p class="easter-caption">Надпись 5</p>
+            </div>
+            <div class="easter-item"><img
+                    src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 150 150'%3E%3Crect width='150' height='150' fill='%23222'/%3E%3Ctext x='75' y='75' text-anchor='middle' fill='%2300ff41' font-size='14' font-family='monospace'%3EПасхалка 6%3C/text%3E%3C/svg%3E"
+                    alt="Easter egg 6">
+                <p class="easter-caption">Надпись 6</p>
+            </div>
+            <div class="easter-item"><img
+                    src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 150 150'%3E%3Crect width='150' height='150' fill='%23222'/%3E%3Ctext x='75' y='75' text-anchor='middle' fill='%2300ff41' font-size='14' font-family='monospace'%3EПасхалка 7%3C/text%3E%3C/svg%3E"
+                    alt="Easter egg 7">
+                <p class="easter-caption">Надпись 7</p>
             </div>
         </div>
-
-        <!-- Финальный портрет (изначально скрыт) -->
-        <div id="final-portrait">
-            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='350' height='350' viewBox='0 0 350 350'%3E%3Crect width='350' height='350' fill='%232A1A1A'/%3E%3Ctext x='175' y='175' text-anchor='middle' fill='%23FFB347' font-size='18' font-family='monospace'%3EПортрет именинника%3C/text%3E%3C/svg%3E" alt="Именинник">
-            <p class="verse" id="final-verse"></p>
-            <p class="greeting" id="final-greeting"></p>
-        </div>
-
-        <!-- Вентиль -->
-        <div id="valve-container">
-            <div id="valve">
-                <div class="gauge"></div>
-                <div class="handle"></div>
-            </div>
-            <p class="hint">ПОДАТЬ ГАЗ</p>
-        </div>
-
-        <!-- Красная лампа -->
-        <div id="red-lamp"></div>
-
-        <!-- Хэштег пасхалка -->
-        <div id="easter-hashtag">#нежалеюнезовунеплачу_нодалипремию</div>
     </div>
 
     <script>
-        (function() {
-            // Стихи для каждого кадра
-            const verses = {
-                frame1: "«Я по первому снегу бреду,\nСердце греет попутный мой газ.\nСквозь видоискатель я в даль поведу\nВсю печаль, что скопилась за раз.»",
-                frame2: "«Не бродить, не мять в кустах багряных\nЛебеды и не искать следа.\nТолько голубой огонь в туманах\nОбнимает, словно в те года.»",
-                frame3: "«В этом мире я только прохожий,\nОбъективом рисую закат.\nТы не плачь, мой товарищ хороший,\nВедь у нас – скидка на корпоративный оклад.»",
-                final: "«С днём рождения, лирик газпромовских трасс!\nПусть в кадрах не будет ни грусти, ни тьмы.\nТвой внутренний газ – это творческий ас,\nА Есенин бы точно сказал: \"Даришь свет из сурьмы\".»"
-            };
-            const greetingText = "[Имя], с днём рождения! Пусть проявляются только лучшие моменты.";
+        (function () {
+            // ============================================
+            // 1. ФОН МАТРИЦЫ (дождь из символов)
+            // ============================================
+            const canvas = document.getElementById('matrixCanvas');
+            const ctx = canvas.getContext('2d');
 
-            // DOM элементы
-            const terminal = document.getElementById('terminal-output');
-            const frame1 = document.getElementById('frame1');
-            const frame2 = document.getElementById('frame2');
-            const frame3 = document.getElementById('frame3');
-            const finalPortrait = document.getElementById('final-portrait');
-            const finalVerse = document.getElementById('final-verse');
-            const finalGreeting = document.getElementById('final-greeting');
-            const valveContainer = document.getElementById('valve-container');
-            const handle = document.querySelector('.handle');
-            const redLamp = document.getElementById('red-lamp');
-            const easterHashtag = document.getElementById('easter-hashtag');
+            function resizeCanvas() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+            window.addEventListener('resize', resizeCanvas);
+            resizeCanvas();
 
-            // Звуковой контекст для шипения газа
+            const chars = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789ABCDEF';
+            const fontSize = 16;
+            let columns = Math.floor(canvas.width / fontSize) + 1;
+            let drops = Array(columns).fill(0);
+
+            window.addEventListener('resize', () => {
+                columns = Math.floor(canvas.width / fontSize) + 1;
+                drops = Array(columns).fill(0);
+            });
+
+            function drawMatrix() {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.08)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#0f0';
+                ctx.font = fontSize + 'px monospace';
+                for (let i = 0; i < drops.length; i++) {
+                    const text = chars.charAt(Math.floor(Math.random() * chars.length));
+                    ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                    if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                        drops[i] = 0;
+                    }
+                    drops[i]++;
+                }
+                requestAnimationFrame(drawMatrix);
+            }
+            drawMatrix();
+
+            // ============================================
+            // 2. ЗВУКИ (Web Audio API)
+            // ============================================
             let audioCtx = null;
 
             function initAudio() {
@@ -374,189 +593,298 @@
                 }
             }
 
-            function playGasSound() {
-                initAudio();
-                const duration = 0.8;
-                const sampleRate = audioCtx.sampleRate;
-                const buffer = audioCtx.createBuffer(1, duration * sampleRate, sampleRate);
-                const data = buffer.getChannelData(0);
-                // Генерация белого шума с фильтрацией низких частот (имитация шипения)
-                for (let i = 0; i < data.length; i++) {
-                    data[i] = (Math.random() * 2 - 1) * 0.3;
+            function playMatrixBeep(frequency = 800, duration = 0.08, volume = 0.15) {
+                if (!audioCtx) return;
+                try {
+                    const now = audioCtx.currentTime;
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'sine';   // ← ИСПРАВЛЕНО: было 'ssine'
+                    osc.frequency.setValueAtTime(frequency, now);
+                    osc.frequency.exponentialRampToValueAtTime(frequency * 0.8, now + duration);
+                    gain.gain.setValueAtTime(volume, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now);
+                    osc.stop(now + duration);
+                } catch (e) {
+                    // игнорируем ошибки аудио
                 }
-                const source = audioCtx.createBufferSource();
-                source.buffer = buffer;
-                const filter = audioCtx.createBiquadFilter();
-                filter.type = 'lowpass';
-                filter.frequency.setValueAtTime(1000, audioCtx.currentTime);
-                filter.frequency.exponentialRampToValueAtTime(300, audioCtx.currentTime + 0.4);
-                const gainNode = audioCtx.createGain();
-                gainNode.gain.setValueAtTime(0.6, audioCtx.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
-                source.connect(filter);
-                filter.connect(gainNode);
-                gainNode.connect(audioCtx.destination);
-                source.start();
-                source.stop(audioCtx.currentTime + duration);
             }
 
-            // Посимвольный вывод текста в терминал
-            function typeText(element, text, speed = 50) {
-                return new Promise(resolve => {
-                    let i = 0;
-                    element.textContent = ''; // очищаем перед набором
-                    function type() {
-                        if (i < text.length) {
-                            element.textContent += text.charAt(i);
-                            i++;
-                            setTimeout(type, speed);
-                        } else {
-                            resolve();
-                        }
-                    }
-                    type();
+            function playLoadingSequence() {
+                const freqs = [600, 800, 1000, 1200, 900, 700, 1100, 950];
+                freqs.forEach((freq, i) => {
+                    setTimeout(() => playMatrixBeep(freq, 0.06, 0.12), i * 120);
                 });
             }
 
-            // Задержка
-            function delay(ms) {
-                return new Promise(resolve => setTimeout(resolve, ms));
-            }
-
-            // Показать кадр с проявкой
-            function developFrame(frame, verseElement, verseText) {
-                frame.classList.add('developed');
-                verseElement.textContent = verseText; // стих появляется сразу, но плавно благодаря transition на .verse
-            }
-
-            // Скрыть все кадры (кроме финального)
-            function hideAllFrames() {
-                [frame1, frame2, frame3].forEach(f => f.classList.remove('developed'));
-            }
-
-            // Главный сценарий
-            async function runScenario() {
-                // Автозагрузка терминала
-                await typeText(terminal, "> Загрузка реактивов: OK", 40);
-                await delay(400);
-                await typeText(terminal, "\n> Давление лирики: 6.0 МПа", 40);
-                await delay(400);
-                await typeText(terminal, "\n> Концентрация иронии: 99.8%", 40);
-                await delay(400);
-                await typeText(terminal, "\n> Газ подан. Цикл проявки запущен...", 40);
-                await delay(800);
-                await typeText(terminal, "\n> Инициализация кадра 1/3...", 40);
-                await delay(600);
-
-                // Проявка кадра 1
-                developFrame(frame1, frame1.querySelector('.verse'), verses.frame1);
-                await delay(4500); // даём насладиться
-
-                // Скрываем первый, показываем второй
-                hideAllFrames();
-                await typeText(terminal, "\n> Кадр 2/3...", 40);
-                developFrame(frame2, frame2.querySelector('.verse'), verses.frame2);
-                await delay(4500);
-
-                // Третий кадр
-                hideAllFrames();
-                await typeText(terminal, "\n> Кадр 3/3...", 40);
-                developFrame(frame3, frame3.querySelector('.verse'), verses.frame3);
-                await delay(4500);
-
-                // После трёх кадров прячем их и показываем вентиль
-                hideAllFrames();
-                terminal.textContent += '\n> Ожидание ручного воздействия...';
-                valveContainer.classList.add('active');
-            }
-
-            // Обработчик клика по вентилю
-            async function onValveClick() {
-                if (handle.classList.contains('turned')) return; // уже повёрнут
-                handle.classList.add('turned');
-                playGasSound();
-
-                // Вспышка
-                const lab = document.getElementById('lab');
-                lab.style.transition = 'background 0.2s';
-                lab.style.background = '#FFFFFF';
-                await delay(200);
-                lab.style.background = 'radial-gradient(circle at 20% 30%, #330000, #1A0000)';
-                lab.style.transition = '';
-
-                // Прячем вентиль и показываем финальный портрет
-                valveContainer.classList.remove('active');
-                finalPortrait.classList.add('visible');
-                finalVerse.textContent = verses.final;
-                finalGreeting.textContent = greetingText;
-            }
-
-            // Пасхалка: красная лампа
-            function onLampClick() {
-                terminal.textContent += '\nERR: избыток лирики. Переключите режим на «иронию».';
-            }
-
-            // Пасхалка: двойной клик по портрету
-            function onPortraitDblClick(e) {
-                easterHashtag.style.display = 'block';
-                setTimeout(() => { easterHashtag.style.display = 'none'; }, 4000);
-            }
-
-            // Пасхалка: тряска телефона
-            function onDeviceShake() {
-                // Визуально разбрызгиваем "капли" – создаём несколько частиц
-                for (let i = 0; i < 12; i++) {
-                    const drop = document.createElement('div');
-                    drop.style.position = 'absolute';
-                    drop.style.width = '4px';
-                    drop.style.height = '4px';
-                    drop.style.background = '#FFB347';
-                    drop.style.borderRadius = '50%';
-                    drop.style.boxShadow = '0 0 6px #FFB347';
-                    drop.style.left = Math.random() * 100 + '%';
-                    drop.style.top = Math.random() * 100 + '%';
-                    drop.style.zIndex = '40';
-                    drop.style.pointerEvents = 'none';
-                    document.getElementById('lab').appendChild(drop);
-                    setTimeout(() => drop.remove(), 1000);
+            function playOkSound() {
+                if (!audioCtx) return;
+                try {
+                    const now = audioCtx.currentTime;
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(1200, now);
+                    osc.frequency.exponentialRampToValueAtTime(1600, now + 0.1);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.1);
+                } catch (e) {
+                    // игнорируем
                 }
-                // Лёгкий звук бульканья (короткий тон)
+            }
+
+            function playActivationSound() {
+                if (!audioCtx) return;
+                try {
+                    const now = audioCtx.currentTime;
+                    for (let i = 0; i < 5; i++) {
+                        const osc = audioCtx.createOscillator();
+                        const gain = audioCtx.createGain();
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(400 + i * 200, now + i * 0.1);
+                        osc.frequency.exponentialRampToValueAtTime(100, now + i * 0.1 + 0.15);
+                        gain.gain.setValueAtTime(0.25, now + i * 0.1);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.1 + 0.15);
+                        osc.connect(gain);
+                        gain.connect(audioCtx.destination);
+                        osc.start(now + i * 0.1);
+                        osc.stop(now + i * 0.1 + 0.15);
+                    }
+                } catch (e) {
+                    // игнорируем
+                }
+            }
+
+            // ============================================
+            // 3. ЛОГИКА ЗАГРУЗКИ ТЕРМИНАЛА
+            // ============================================
+            const logContainer = document.getElementById('log-container');
+            const progressBarContainer = document.getElementById('progress-bar-container');
+            const progressBarFill = document.getElementById('progress-bar-fill');
+            const activateBtn = document.getElementById('activate-btn');
+
+            const systemLogs = [
+                "[BOOT] Initializing OS 'V.V.V.' ver.4.9...",
+                "[KERNEL] Loading core modules...",
+                "[MEMORY] Allocating system resources...",
+                "[CHECK] Проверка нервной системы...",
+                "[CHECK] Обновление физических модулей...",
+                "[CHECK] Калибровка суставов...",
+                "[CHECK] Давление в норме...",
+                "[CHECK] Уровень самоиронии: стабильный...",
+                "[CHECK] Соединение с окружением установлено...",
+                "[CHECK] Проверка кардио-ритма...",
+                "[CHECK] Модуль 'Жизненный опыт' активирован...",
+                "[CHECK] Синхронизация с реальностью...",
+                "[NETWORK] Установка защищённого соединения...",
+                "[NETWORK] Подключение к потоку позитивных событий...",
+                "[FINISH] Все системы готовы."
+            ];
+
+            function createLogLine(text, hasOk = true) {
+                const lineDiv = document.createElement('div');
+                lineDiv.className = 'log-line';
+                lineDiv.textContent = text;
+                if (hasOk) {
+                    const okSpan = document.createElement('span');
+                    okSpan.className = 'ok-indicator';
+                    okSpan.textContent = ' OK';
+                    lineDiv.appendChild(okSpan);
+                }
+                return lineDiv;
+            }
+
+            async function runBootSequence() {
+                if (!logContainer) return;
+
+                // Очищаем предыдущие логи
+                logContainer.innerHTML = '';
+                progressBarContainer.classList.add('visible');
+                progressBarFill.style.width = '0%';
+                activateBtn.classList.remove('visible');
+
+                // Инициализируем аудио при первом взаимодействии
                 initAudio();
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(200 + Math.random() * 200, audioCtx.currentTime);
-                gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-                osc.start();
-                osc.stop(audioCtx.currentTime + 0.3);
+                playLoadingSequence();
+
+                const totalLines = systemLogs.length;
+                for (let i = 0; i < totalLines; i++) {
+                    const line = createLogLine(systemLogs[i], i > 0);
+                    logContainer.appendChild(line);
+
+                    // Задержка перед показом строки
+                    await new Promise(resolve => setTimeout(resolve, 350 + Math.random() * 200));
+
+                    // Показываем строку
+                    line.classList.add('visible');
+
+                    // Если есть индикатор ОК, показываем его с задержкой
+                    const okIndicator = line.querySelector('.ok-indicator');
+                    if (okIndicator) {
+                        await new Promise(resolve => setTimeout(resolve, 250 + Math.random() * 150));
+                        okIndicator.classList.add('show');
+                        playOkSound();
+                    }
+
+                    // Обновляем прогресс-бар
+                    const progress = ((i + 1) / totalLines) * 100;
+                    progressBarFill.style.width = progress + '%';
+
+                    // Небольшая пауза между строками
+                    await new Promise(resolve => setTimeout(resolve, 150));
+                }
+
+                // Завершение загрузки
+                await new Promise(resolve => setTimeout(resolve, 600));
+                progressBarFill.style.width = '100%';
+                playActivationSound();
+
+                // Показываем кнопку
+                await new Promise(resolve => setTimeout(resolve, 400));
+                activateBtn.classList.add('visible');
             }
 
-            // Обработчик тряски (акселерометр)
-            let lastShakeTime = 0;
-            function handleMotionEvent(event) {
-                const acc = event.accelerationIncludingGravity;
-                if (!acc) return;
-                const magnitude = Math.sqrt(acc.x * acc.x + acc.y * acc.y + acc.z * acc.z);
-                if (magnitude > 25 && Date.now() - lastShakeTime > 1000) {
-                    lastShakeTime = Date.now();
-                    onDeviceShake();
+            // ============================================
+            // 4. ПЕРЕХОД МЕЖДУ СТРАНИЦАМИ
+            // ============================================
+            const page1 = document.getElementById('page1');
+            const page2 = document.getElementById('page2');
+            const backLink = document.getElementById('back-link');
+            const lensButton = document.getElementById('lens-button');
+            const easterGallery = document.getElementById('easter-gallery');
+
+            let bgAudio = null;
+
+            function createAudioElement() {
+                if (!bgAudio) {
+                    bgAudio = document.createElement('audio');
+                    bgAudio.id = 'bg-audio';
+                    bgAudio.loop = true;
+                    bgAudio.volume = 0.5;
+                    // bgAudio.src = 'your-track.mp3'; // Установите путь к аудиофайлу позже
+                    document.body.appendChild(bgAudio);
+                }
+                return bgAudio;
+            }
+
+            function goToPage2() {
+                page1.style.display = 'none';
+                page2.classList.add('active');
+
+                const audio = createAudioElement();
+                if (audio.src && audio.src !== window.location.href && audio.src !== '') {
+                    audio.currentTime = 0;
+                    audio.play().catch(e => console.log('Аудио не может воспроизвестись:', e));
+                }
+
+                launchConfetti();
+                window.scrollTo(0, 0);
+            }
+
+            function goToPage1() {
+                page2.classList.remove('active');
+                page1.style.display = 'flex';
+
+                if (bgAudio) {
+                    bgAudio.pause();
+                    bgAudio.currentTime = 0;
+                }
+
+                easterGallery.classList.remove('open');
+                runBootSequence();
+                window.scrollTo(0, 0);
+            }
+
+            activateBtn.addEventListener('click', goToPage2);
+            backLink.addEventListener('click', goToPage1);
+
+            lensButton.addEventListener('click', () => {
+                easterGallery.classList.toggle('open');
+                if (easterGallery.classList.contains('open')) {
+                    playOkSound();
+                }
+            });
+
+            // ============================================
+            // 5. КОНФЕТТИ
+            // ============================================
+            function launchConfetti() {
+                const colors = ['#00ff41', '#ffcc00', '#ff6600', '#00ccff', '#ff3399', '#ffffff'];
+                const container = document.body;
+
+                for (let i = 0; i < 150; i++) {
+                    setTimeout(() => {
+                        const confetti = document.createElement('div');
+                        confetti.style.position = 'fixed';
+                        confetti.style.zIndex = '9999';
+                        confetti.style.pointerEvents = 'none';
+                        confetti.style.left = Math.random() * 100 + '%';
+                        confetti.style.top = '-20px';
+                        confetti.style.width = (Math.random() * 10 + 6) + 'px';
+                        confetti.style.height = (Math.random() * 6 + 4) + 'px';
+                        confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                        confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+                        confetti.style.transform = 'rotate(' + Math.random() * 360 + 'deg)';
+                        container.appendChild(confetti);
+
+                        // Анимация падения
+                        const fallDuration = Math.random() * 3000 + 2000;
+                        const horizontalDrift = (Math.random() - 0.5) * 200;
+
+                        confetti.animate([
+                            { top: '-20px', opacity: 1, transform: 'rotate(0deg) translateX(0px)' },
+                            { top: '110vh', opacity: 0, transform: 'rotate(' + (Math.random() * 720) + 'deg) translateX(' + horizontalDrift + 'px)' }
+                        ], {
+                            duration: fallDuration,
+                            easing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+                            fill: 'forwards'
+                        }).onfinish = () => {
+                            confetti.remove();
+                        };
+                    }, i * 20);
                 }
             }
 
-            // Привязка событий
-            document.getElementById('valve').addEventListener('click', onValveClick);
-            redLamp.addEventListener('click', onLampClick);
-            document.getElementById('final-portrait').addEventListener('dblclick', onPortraitDblClick);
-            window.addEventListener('devicemotion', handleMotionEvent, true);
+            // ============================================
+            // ============================================
+            // 6. РАЗБЛОКИРОВКА ЗВУКА И СТАРТ
+            // ============================================
+            const audioUnlockOverlay = document.getElementById('audio-unlock-overlay');
 
-            // Запуск сценария после загрузки
+            function startBootWithAudio() {
+                // Инициализируем и разблокируем аудиоконтекст
+                initAudio();
+                // Воспроизводим тихий звук для разблокировки (обязательно внутри обработчика клика)
+                if (audioCtx && audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+                // Тихая нота для активации
+                playMatrixBeep(100, 0.01, 0.01);
+
+                // Скрываем оверлей
+                audioUnlockOverlay.style.display = 'none';
+
+                // Запускаем загрузку
+                setTimeout(() => {
+                    runBootSequence();
+                }, 300);
+            }
+
+            audioUnlockOverlay.addEventListener('click', startBootWithAudio);
+
+            // На случай, если пользователь нажал кнопку раньше (не должно случиться, но подстрахуем)
             window.addEventListener('load', () => {
-                runScenario();
+                // Ждём клика — загрузка начнётся только после взаимодействия
             });
         })();
     </script>
 </body>
+
 </html>
