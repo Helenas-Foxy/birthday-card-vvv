@@ -90,7 +90,7 @@
 
         .log-line {
             color: #ffffff;
-            font-size: 14px;
+            font-size: 18px;
             line-height: 1.8;
             opacity: 0;
             transform: translateX(-10px);
@@ -204,6 +204,8 @@
             display: flex;
             justify-content: space-between;
             z-index: 30;
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
         .back-link {
@@ -248,6 +250,7 @@
             margin-bottom: 20px;
             letter-spacing: 2px;
             line-height: 1.4;
+            margin-top: 40px;
         }
 
         .congrats-text {
@@ -323,6 +326,67 @@
             50% {
                 opacity: 0.5;
             }
+        }
+
+        /* ===== КНОПКИ МОТИВАЦИИ ===== */
+        .motivation-area {
+            margin-top: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .motivation-btn {
+            background: transparent;
+            border: 1px solid #ffcc00;
+            color: #ffcc00;
+            font-family: 'Courier New', monospace;
+            font-size: 18px;
+            padding: 10px 20px;
+            cursor: pointer;
+            letter-spacing: 2px;
+            text-shadow: 0 0 8px #ffcc00;
+            box-shadow: 0 0 15px rgba(255, 204, 0, 0.3);
+            transition: all 0.3s;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .motivation-btn.visible {
+            display: block;
+        }
+
+        .motivation-btn:hover {
+            background: #ffcc00;
+            color: #000;
+            box-shadow: 0 0 30px rgba(255, 204, 0, 0.7);
+        }
+
+        .stop-motivation-btn {
+            background: transparent;
+            border: 1px solid #ff6600;
+            color: #ff6600;
+            font-family: 'Courier New', monospace;
+            font-size: 18px;
+            padding: 10px 20px;
+            cursor: pointer;
+            letter-spacing: 2px;
+            text-shadow: 0 0 8px #ff6600;
+            box-shadow: 0 0 15px rgba(255, 102, 0, 0.3);
+            transition: all 0.3s;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .stop-motivation-btn.visible {
+            display: block;
+        }
+
+        .stop-motivation-btn:hover {
+            background: #ff6600;
+            color: #000;
+            box-shadow: 0 0 30px rgba(255, 102, 0, 0.7);
         }
 
         /* ===== ВСПЛЫВАЮЩИЕ КАРТОЧКИ ===== */
@@ -438,11 +502,14 @@
                 padding: 20px 15px;
             }
             .log-line {
-                font-size: 12px;
+                font-size: 14px;
             }
             .activate-btn {
                 font-size: 16px;
                 padding: 12px 24px;
+            }
+            .congrats-title {
+                margin-top: 60px;
             }
             #easter-rabbit {
                 font-size: 45px;
@@ -465,6 +532,15 @@
             }
             .center-card .caption {
                 font-size: 20px !important;
+            }
+            .motivation-btn,
+            .stop-motivation-btn {
+                font-size: 12px;
+                padding: 8px 16px;
+            }
+            .top-bar {
+                flex-direction: column;
+                align-items: flex-start;
             }
         }
     </style>
@@ -503,7 +579,7 @@
             font-family: 'Courier New', monospace;
             font-size: 14px;
             letter-spacing: 1px;
-        ">(разблокировка звука и запуск системы)</div>
+        ">(запуск системы)</div>
     </div>
 
     <!-- Страница 1: Терминал -->
@@ -531,18 +607,28 @@
         </div>
         <div class="congrats-title">Добро пожаловать <br> в новый год твоей жизни!</div>
         <div class="congrats-text">
-            Тебя ждут увлекательные путешествия, новые локации для отдыха, интересные люди,
+            Тебя ждут увлекательные путешествия,<br> 
+            новые локации для отдыха, интересные люди,<br>            
             непредсказуемые, но исключительно позитивные события!<br>
-            За плечами много серьезных побед, но впереди ещё больше амбициозных целей.<br>
-            Пусть этот год станет идеальной взлётной полосой перед красивым юбилеем!<br>
-            Итак, пристегните ремни,<br>
+            За плечами много серьезных побед, но впереди<br> 
+            ещё больше амбициозных целей.<br>
+            Пусть этот год станет идеальной взлётной полосой<br> 
+            перед красивым юбилеем!<br>
+            Итак, уважаемые пассажиры,<br>
+            пристегните ремни,<br>
             мы взлетаем!
         </div>
 
         <!-- Заяц -->
         <div class="rabbit-area">
-            <div id="easter-rabbit" title="Нажми на зайца!">🐇</div>
-            <div class="rabbit-label">НАЖМИ НА ЗАЙЦА</div>
+            <div id="easter-rabbit">🐇</div>
+            <div class="rabbit-label"></div>
+        </div>
+
+        <!-- Кнопки мотивации -->
+        <div class="motivation-area">
+            <button class="motivation-btn visible" id="motivation-btn">Если не хватает мотивации, нажми</button>
+            <button class="stop-motivation-btn" id="stop-motivation-btn">Я понял, мне хватит!</button>
         </div>
     </div>
 
@@ -590,7 +676,7 @@
             drawMatrix();
 
             // ============================================
-            // 2. ЗВУКИ (глубокие терминальные)
+            // 2. ЗВУКИ
             // ============================================
             let audioCtx = null;
 
@@ -603,39 +689,33 @@
             function playOkSound() {
                 if (!audioCtx) return;
                 try {
-                    const now = audioCtx.currentTime;
                     const osc = audioCtx.createOscillator();
                     const gain = audioCtx.createGain();
-                    osc.type = 'triangle';
-                    osc.frequency.setValueAtTime(180, now);
-                    osc.frequency.exponentialRampToValueAtTime(60, now + 0.15);
-                    gain.gain.setValueAtTime(0.3, now);
-                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+                    osc.type = 'sine';
+                    osc.frequency.value = 400;
+                    gain.gain.value = 0.05;
                     osc.connect(gain);
                     gain.connect(audioCtx.destination);
-                    osc.start(now);
-                    osc.stop(now + 0.15);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.05);
                 } catch (e) {}
             }
 
             function playLoadingSequence() {
-                const freqs = [150, 180, 220, 260, 200, 170, 240, 210];
+                const freqs = [400, 500, 600, 700, 550, 450, 650, 500];
                 freqs.forEach((freq, i) => {
                     setTimeout(() => {
                         if (!audioCtx) return;
                         try {
-                            const now = audioCtx.currentTime;
                             const osc = audioCtx.createOscillator();
                             const gain = audioCtx.createGain();
-                            osc.type = 'triangle';
-                            osc.frequency.setValueAtTime(freq, now);
-                            osc.frequency.exponentialRampToValueAtTime(freq * 0.6, now + 0.1);
-                            gain.gain.setValueAtTime(0.2, now);
-                            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+                            osc.type = 'sine';
+                            osc.frequency.value = freq;
+                            gain.gain.value = 0.05;
                             osc.connect(gain);
                             gain.connect(audioCtx.destination);
-                            osc.start(now);
-                            osc.stop(now + 0.1);
+                            osc.start();
+                            osc.stop(audioCtx.currentTime + 0.05);
                         } catch (e) {}
                     }, i * 150);
                 });
@@ -644,37 +724,38 @@
             function playActivationSound() {
                 if (!audioCtx) return;
                 try {
-                    const now = audioCtx.currentTime;
-                    for (let i = 0; i < 4; i++) {
-                        const osc = audioCtx.createOscillator();
-                        const gain = audioCtx.createGain();
-                        osc.type = 'triangle';
-                        osc.frequency.setValueAtTime(120 + i * 60, now + i * 0.15);
-                        osc.frequency.exponentialRampToValueAtTime(40, now + i * 0.15 + 0.25);
-                        gain.gain.setValueAtTime(0.35, now + i * 0.15);
-                        gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.15 + 0.25);
-                        osc.connect(gain);
-                        gain.connect(audioCtx.destination);
-                        osc.start(now + i * 0.15);
-                        osc.stop(now + i * 0.15 + 0.25);
-                    }
+                    const freqs = [400, 500, 600, 700];
+                    freqs.forEach((freq, i) => {
+                        setTimeout(() => {
+                            if (!audioCtx) return;
+                            try {
+                                const osc = audioCtx.createOscillator();
+                                const gain = audioCtx.createGain();
+                                osc.type = 'sine';
+                                osc.frequency.value = freq;
+                                gain.gain.value = 0.05;
+                                osc.connect(gain);
+                                gain.connect(audioCtx.destination);
+                                osc.start();
+                                osc.stop(audioCtx.currentTime + 0.08);
+                            } catch (e) {}
+                        }, i * 120);
+                    });
                 } catch (e) {}
             }
 
             function playUnlockBeep() {
                 if (!audioCtx) return;
                 try {
-                    const now = audioCtx.currentTime;
                     const osc = audioCtx.createOscillator();
                     const gain = audioCtx.createGain();
                     osc.type = 'sine';
-                    osc.frequency.setValueAtTime(200, now);
-                    gain.gain.setValueAtTime(0.05, now);
-                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+                    osc.frequency.value = 400;
+                    gain.gain.value = 0.05;
                     osc.connect(gain);
                     gain.connect(audioCtx.destination);
-                    osc.start(now);
-                    osc.stop(now + 0.05);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.05);
                 } catch (e) {}
             }
 
@@ -751,16 +832,20 @@
             }
 
             // ============================================
-            // 4. ПЕРЕХОД МЕЖДУ СТРАНИЦАМИ + АУДИО
+            // 4. ПЕРЕХОД МЕЖДУ СТРАНИЦАМИ + АУДИО + МОТИВАЦИЯ
             // ============================================
             const page1 = document.getElementById('page1');
             const page2 = document.getElementById('page2');
             const backLink = document.getElementById('back-link');
             const soundToggle = document.getElementById('sound-toggle');
             const easterRabbit = document.getElementById('easter-rabbit');
+            const motivationBtn = document.getElementById('motivation-btn');
+            const stopMotivationBtn = document.getElementById('stop-motivation-btn');
 
-            let bgAudio = null;
+            let bgAudio = null;        // cl.mp3 — основной трек
+            let motivationAudio = null; // a1.mp3 — трек мотивации
             let audioEnabled = true;
+            let motivationActive = false; // флаг: играет ли мотивационный трек
 
             function createAudioElement() {
                 if (!bgAudio) {
@@ -774,6 +859,18 @@
                 return bgAudio;
             }
 
+            function createMotivationAudio() {
+                if (!motivationAudio) {
+                    motivationAudio = document.createElement('audio');
+                    motivationAudio.id = 'motivation-audio';
+                    motivationAudio.loop = true;
+                    motivationAudio.volume = 0.5;
+                    motivationAudio.src = 'images/a1.mp3';
+                    document.body.appendChild(motivationAudio);
+                }
+                return motivationAudio;
+            }
+
             function goToPage2() {
                 page1.style.display = 'none';
                 page2.classList.add('active');
@@ -785,6 +882,11 @@
                 }
                 updateSoundButton();
                 launchConfetti();
+
+                // Показываем кнопку мотивации, скрываем кнопку остановки
+                motivationBtn.classList.add('visible');
+                stopMotivationBtn.classList.remove('visible');
+
                 window.scrollTo(0, 0);
             }
 
@@ -792,26 +894,57 @@
                 page2.classList.remove('active');
                 page1.style.display = 'flex';
 
+                // Останавливаем все аудио
                 if (bgAudio) {
                     bgAudio.pause();
                     bgAudio.currentTime = 0;
                 }
+                if (motivationAudio) {
+                    motivationAudio.pause();
+                    motivationAudio.currentTime = 0;
+                }
 
                 stopAllEasterEggs();
                 stopConfetti();
-                runBootSequence();
+
+                // Показываем оверлей обратно
+                audioUnlockOverlay.style.display = 'flex';
+
+                // Очищаем терминал
+                logContainer.innerHTML = '';
+                progressBarContainer.classList.remove('visible');
+                progressBarFill.style.width = '0%';
+                activateBtn.classList.remove('visible');
+
+                // Сбрасываем кнопки мотивации
+                // Сбрасываем кнопки мотивации и флаг
+                motivationActive = false;
+                motivationBtn.classList.add('visible');
+                stopMotivationBtn.classList.remove('visible');
+
                 window.scrollTo(0, 0);
             }
 
             function toggleSound() {
                 audioEnabled = !audioEnabled;
-                const audio = createAudioElement();
-                if (audioEnabled) {
-                    audio.play().catch(e => {});
-                } else {
-                    audio.pause();
-                }
                 updateSoundButton();
+
+                if (audioEnabled) {
+                    // Включаем тот трек, который играл до выключения
+                    if (motivationActive) {
+                        const motAudio = createMotivationAudio();
+                        motAudio.play().catch(e => {});
+                    } else {
+                        const audio = createAudioElement();
+                        audio.play().catch(e => {});
+                    }
+                } else {
+                    // Выключаем всё
+                    const audio = bgAudio;
+                    const motAudio = motivationAudio;
+                    if (audio) audio.pause();
+                    if (motAudio) motAudio.pause();
+                }
             }
 
             function updateSoundButton() {
@@ -820,9 +953,57 @@
                 soundToggle.style.borderColor = audioEnabled ? 'var(--matrix-green)' : '#555';
             }
 
+            // Кнопка «если не хватает мотивации»
+            function startMotivation() {
+                const audio = createAudioElement();
+                const motAudio = createMotivationAudio();
+
+                // Ставим основной трек на паузу
+                audio.pause();
+
+                // Запускаем мотивационный трек
+                if (audioEnabled && motAudio.src && motAudio.src !== window.location.href && motAudio.src !== '') {
+                    motAudio.currentTime = 0;
+                    motAudio.play().catch(e => console.log('Мотивационный трек не может воспроизвестись:', e));
+                }
+
+                // Устанавливаем флаг
+                motivationActive = true;
+
+                // Меняем кнопки
+                motivationBtn.classList.remove('visible');
+                stopMotivationBtn.classList.add('visible');
+            }
+
+            // Кнопка «я понял, мне хватит»
+            function stopMotivation() {
+                const audio = createAudioElement();
+                const motAudio = motivationAudio;
+
+                // Останавливаем мотивационный трек
+                if (motAudio) {
+                    motAudio.pause();
+                    motAudio.currentTime = 0;
+                }
+
+                // Сбрасываем флаг
+                motivationActive = false;
+
+                // Возобновляем основной трек
+                if (audioEnabled && audio.src && audio.src !== window.location.href && audio.src !== '') {
+                    audio.play().catch(e => {});
+                }
+
+                // Меняем кнопки обратно
+                stopMotivationBtn.classList.remove('visible');
+                motivationBtn.classList.add('visible');
+            }
+
             activateBtn.addEventListener('click', goToPage2);
             backLink.addEventListener('click', goToPage1);
             soundToggle.addEventListener('click', toggleSound);
+            motivationBtn.addEventListener('click', startMotivation);
+            stopMotivationBtn.addEventListener('click', stopMotivation);
 
             // ============================================
             // 5. КОНФЕТТИ (БЕСКОНЕЧНЫЕ)
@@ -884,7 +1065,7 @@
                 { img: "images/4.jfif", text: "изумительные рассветы и закаты..." },
                 { img: "images/5.jfif", text: "ведь счастье в мелочах" },
                 { img: "images/6.jfif", text: "порой мы забываем об этом" },
-                { img: "images/7.jfif", text: "но ты же помнишь" },
+                { img: "images/7.jfif", text: "но ты помни" },
                 { img: "images/8.jfif", text: "каждый день неповторим)" },
                 { img: "images/9.jfif", text: "и пусть порой встречаются трудности" },
                 { img: "images/10.jfif", text: "их просто нужно пережить" },
@@ -906,13 +1087,10 @@
             }
 
             function spawnEasterEggs() {
-                // Очищаем предыдущие
                 stopAllEasterEggs();
-
                 easterActive = true;
                 playOkSound();
 
-                // 13 карточек с интервалом 4 секунды
                 easterData.forEach((item, index) => {
                     const spawnTimer = setTimeout(() => {
                         if (!easterActive) return;
@@ -941,7 +1119,6 @@
                     easterTimers.push(spawnTimer);
                 });
 
-                // 14-я центральная карточка через 52 секунды (13 × 4)
                 const centerTimer = setTimeout(() => {
                     if (!easterActive) return;
 
@@ -958,7 +1135,6 @@
                     const removeCenterTimer = setTimeout(() => centerCard.remove(), 5000);
                     easterTimers.push(removeCenterTimer);
 
-                    // Сбрасываем флаг через 5 секунд после появления центральной карточки
                     const resetTimer = setTimeout(() => {
                         easterActive = false;
                     }, 5000);
@@ -976,7 +1152,6 @@
                 document.querySelectorAll('.easter-obj, .center-card').forEach(el => el.remove());
             }
 
-            // Привязка зайца — каждый клик запускает новый цикл
             easterRabbit.addEventListener('click', spawnEasterEggs);
 
             // ============================================
@@ -989,7 +1164,7 @@
                 if (audioCtx && audioCtx.state === 'suspended') {
                     audioCtx.resume();
                 }
-                 playUnlockBeep();
+                playUnlockBeep();
                 audioUnlockOverlay.style.display = 'none';
                 setTimeout(() => runBootSequence(), 300);
             }
