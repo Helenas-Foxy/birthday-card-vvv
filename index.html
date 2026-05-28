@@ -9,8 +9,6 @@
         :root {
             --matrix-green: #00ff41;
             --matrix-green-dim: #008f22;
-            --bg-terminal: #0d0d0d;
-            --text-glow: #00ff41;
         }
 
         * {
@@ -26,16 +24,6 @@
             min-height: 100vh;
         }
 
-        .matrix-bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 0;
-            pointer-events: none;
-        }
-
         canvas#matrixCanvas {
             display: block;
             position: fixed;
@@ -44,6 +32,7 @@
             z-index: 0;
         }
 
+        /* ===== СТРАНИЦА 1: ТЕРМИНАЛ ===== */
         .terminal-wrapper {
             position: relative;
             z-index: 10;
@@ -78,28 +67,22 @@
         }
 
         @keyframes flicker {
-
             0%,
             100% {
                 opacity: 1;
             }
-
             92% {
                 opacity: 1;
             }
-
             93% {
                 opacity: 0.8;
             }
-
             94% {
                 opacity: 1;
             }
-
             96% {
                 opacity: 0.7;
             }
-
             97% {
                 opacity: 1;
             }
@@ -194,29 +177,7 @@
             transform: scale(0.97);
         }
 
-        .cursor-blink {
-            display: inline-block;
-            width: 10px;
-            height: 20px;
-            background: var(--matrix-green);
-            margin-left: 4px;
-            animation: blink-cursor 0.8s infinite;
-            vertical-align: middle;
-        }
-
-        @keyframes blink-cursor {
-
-            0%,
-            100% {
-                opacity: 1;
-            }
-
-            50% {
-                opacity: 0;
-            }
-        }
-
-        /* Страница 2 */
+        /* ===== СТРАНИЦА 2: ПОЗДРАВЛЕНИЕ ===== */
         .page2 {
             display: none;
             position: relative;
@@ -235,10 +196,17 @@
             justify-content: center;
         }
 
-        .back-link {
+        .top-bar {
             position: absolute;
             top: 20px;
             left: 20px;
+            right: 20px;
+            display: flex;
+            justify-content: space-between;
+            z-index: 30;
+        }
+
+        .back-link {
             color: var(--matrix-green);
             text-decoration: none;
             font-family: 'Courier New', monospace;
@@ -246,13 +214,30 @@
             letter-spacing: 1px;
             text-shadow: 0 0 10px var(--matrix-green);
             cursor: pointer;
-            z-index: 30;
             transition: opacity 0.3s;
         }
 
         .back-link:hover {
             opacity: 0.7;
             text-decoration: underline;
+        }
+
+        .sound-toggle {
+            color: var(--matrix-green);
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            letter-spacing: 1px;
+            text-shadow: 0 0 10px var(--matrix-green);
+            cursor: pointer;
+            transition: opacity 0.3s;
+            background: none;
+            border: 1px solid var(--matrix-green);
+            padding: 6px 14px;
+            border-radius: 4px;
+        }
+
+        .sound-toggle:hover {
+            opacity: 0.7;
         }
 
         .congrats-title {
@@ -271,177 +256,225 @@
             color: #e0e0e0;
             max-width: 700px;
             line-height: 1.6;
-            margin-bottom: 40px;
+            margin-bottom: 20px;
             text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
         }
 
-        .lens-button {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            background: radial-gradient(circle at 30% 30%, #444, #111);
-            border: 6px solid #333;
-            box-shadow: 0 0 30px rgba(0, 255, 65, 0.4), 0 10px 30px rgba(0, 0, 0, 0.8), inset 0 5px 15px rgba(0, 0, 0, 0.8);
-            cursor: pointer;
-            transition: transform 0.3s, box-shadow 0.3s;
-            position: relative;
-            margin: 30px auto;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .lens-button:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 50px rgba(0, 255, 65, 0.8), 0 15px 40px rgba(0, 0, 0, 0.9);
-        }
-
-        .lens-button:active {
-            transform: scale(0.95);
-        }
-
-        .lens-inner {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: radial-gradient(circle at 40% 40%, #1a1a1a, #000);
-            border: 3px solid #555;
-            box-shadow: inset 0 2px 10px rgba(0, 255, 65, 0.3);
-        }
-
-        .lens-label {
-            color: var(--matrix-green);
-            font-family: 'Courier New', monospace;
-            font-size: 12px;
-            letter-spacing: 2px;
-            margin-top: 5px;
-            text-shadow: 0 0 8px var(--matrix-green);
-        }
-
-        .easter-gallery {
-            display: none;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 20px;
-            margin-top: 30px;
-            max-width: 900px;
-            padding: 20px;
-        }
-
-        .easter-gallery.open {
-            display: flex;
-        }
-
-        .easter-item {
-            width: 150px;
+        /* ===== ЗАЯЦ ===== */
+        .rabbit-area {
+            margin: 20px 0;
             text-align: center;
-            animation: fadeInUp 0.5s ease forwards;
-            opacity: 0;
         }
 
-        .easter-item:nth-child(1) {
-            animation-delay: 0.1s;
+        #easter-rabbit {
+            display: inline-block;
+            font-size: 60px;
+            cursor: pointer;
+            user-select: none;
+            transition: transform 0.1s ease-in-out;
+            animation: bunnyHop 0.6s infinite ease-in-out;
+            filter: drop-shadow(0 0 15px #00ff41);
         }
 
-        .easter-item:nth-child(2) {
-            animation-delay: 0.2s;
+        #easter-rabbit:hover {
+            animation: bunnyHopFast 0.3s infinite ease-in-out;
+            filter: drop-shadow(0 0 25px #00ff41);
         }
 
-        .easter-item:nth-child(3) {
-            animation-delay: 0.3s;
+        #easter-rabbit:active {
+            transform: scale(1.2);
         }
 
-        .easter-item:nth-child(4) {
-            animation-delay: 0.4s;
-        }
-
-        .easter-item:nth-child(5) {
-            animation-delay: 0.5s;
-        }
-
-        .easter-item:nth-child(6) {
-            animation-delay: 0.6s;
-        }
-
-        .easter-item:nth-child(7) {
-            animation-delay: 0.7s;
-        }
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-
-            to {
-                opacity: 1;
+        @keyframes bunnyHop {
+            0%,
+            100% {
                 transform: translateY(0);
             }
+            50% {
+                transform: translateY(-12px);
+            }
         }
 
-        .easter-item img {
-            width: 150px;
-            height: 150px;
-            object-fit: cover;
-            border-radius: 12px;
-            border: 2px solid #444;
-            box-shadow: 0 0 20px rgba(0, 255, 65, 0.2);
-            transition: transform 0.3s, box-shadow 0.3s;
-            background: #1a1a1a;
+        @keyframes bunnyHopFast {
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-20px);
+            }
         }
 
-        .easter-item img:hover {
-            transform: scale(1.08);
-            box-shadow: 0 0 35px rgba(0, 255, 65, 0.6);
-        }
-
-        .easter-caption {
-            color: #ccc;
+        .rabbit-label {
+            color: var(--matrix-green);
             font-family: 'Courier New', monospace;
-            font-size: 13px;
+            font-size: 14px;
+            letter-spacing: 2px;
             margin-top: 8px;
-            text-shadow: 0 0 6px rgba(255, 255, 255, 0.3);
+            text-shadow: 0 0 10px var(--matrix-green);
+            animation: pulse-text 2s infinite;
         }
 
+        @keyframes pulse-text {
+            0%,
+            100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        /* ===== ВСПЛЫВАЮЩИЕ КАРТОЧКИ ===== */
+        .easter-obj {
+            position: fixed;
+            z-index: 200;
+            pointer-events: none;
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #00ff41;
+            padding: 12px;
+            border-radius: 12px;
+            text-align: center;
+            color: #fff;
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.4);
+            max-width: 160px;
+            box-sizing: border-box;
+            animation: floatAround 8s ease-in-out forwards;
+        }
+
+        .easter-obj img {
+            width: 120px;
+            height: auto;
+            display: block;
+            margin: 0 auto 10px;
+            border-radius: 8px;
+            border: 1px solid #00ff41;
+        }
+
+        .easter-obj .caption {
+            font-weight: bold;
+            color: #fff;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        @keyframes floatAround {
+            0% {
+                transform: scale(0) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                transform: scale(1) rotate(5deg);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.1) translate(20px, -30px) rotate(-5deg);
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: scale(0.8) translate(-20px, -60px) rotate(10deg);
+                opacity: 0;
+            }
+        }
+
+        /* 14-я центральная карточка */
+        .center-card {
+            position: fixed;
+            z-index: 300;
+            pointer-events: none;
+            background: rgba(0, 0, 0, 0.95);
+            border: 3px solid #ffcc00;
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 0 60px rgba(255, 204, 0, 0.8), 0 0 120px rgba(255, 204, 0, 0.4);
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%) scale(4);
+            animation: centerCardReveal 5s ease-out forwards;
+        }
+
+        .center-card img {
+            width: 200px;
+            height: auto;
+            display: block;
+            margin: 0 auto 20px;
+            border-radius: 12px;
+            border: 2px solid #ffcc00;
+        }
+
+        .center-card .caption {
+            font-weight: bold;
+            color: #ffcc00;
+            font-size: 28px;
+            text-align: center;
+            text-shadow: 0 0 30px #ffcc00, 0 0 60px #ffcc00;
+        }
+
+        @keyframes centerCardReveal {
+            0% {
+                transform: translate(-50%, -50%) scale(4);
+                opacity: 1;
+            }
+            30% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+            70% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(0.8);
+                opacity: 0;
+            }
+        }
+
+        /* ===== АДАПТИВ ===== */
         @media (max-width: 600px) {
             .terminal {
                 padding: 20px 15px;
             }
-
             .log-line {
-                font-size: 14px;
+                font-size: 12px;
             }
-
             .activate-btn {
                 font-size: 16px;
                 padding: 12px 24px;
             }
-
-            .lens-button {
-                width: 90px;
-                height: 90px;
+            #easter-rabbit {
+                font-size: 45px;
             }
-
-            .lens-inner {
-                width: 35px;
-                height: 35px;
+            .easter-obj {
+                padding: 8px;
+                max-width: 130px;
             }
-
-            .easter-item {
-                width: 120px;
+            .easter-obj img {
+                width: 100px !important;
             }
-
-            .easter-item img {
-                width: 120px;
-                height: 120px;
+            .easter-obj .caption {
+                font-size: 12px !important;
+            }
+            .center-card {
+                padding: 20px;
+            }
+            .center-card img {
+                width: 140px !important;
+            }
+            .center-card .caption {
+                font-size: 20px !important;
             }
         }
     </style>
 </head>
 
 <body>
+
     <canvas id="matrixCanvas"></canvas>
-    <!-- Кнопка разблокировки звука (появляется при загрузке) -->
+
+    <!-- Оверлей разблокировки звука -->
     <div id="audio-unlock-overlay" style="
         position: fixed;
         top: 0;
@@ -470,14 +503,15 @@
             font-family: 'Courier New', monospace;
             font-size: 14px;
             letter-spacing: 1px;
-        "></div>
+        ">(разблокировка звука и запуск системы)</div>
     </div>
+
     <!-- Страница 1: Терминал -->
     <div class="terminal-wrapper" id="page1">
         <div class="terminal">
             <div class="terminal-header">
-                <h1> <em>Обновление OS "V.V.V."<br></em></h1>
-                <span style="font-size:14px;"> <strong> ver. 4.9 // INIT SEQUENCE </strong></span>
+                <h1><em>Обновление OS "V.V.V."<br></em></h1>
+                <span style="font-size:14px;"><strong> ver. 4.9 // INIT SEQUENCE </strong></span>
             </div>
             <div id="log-container"></div>
             <div class="progress-bar-container" id="progress-bar-container">
@@ -491,59 +525,31 @@
 
     <!-- Страница 2: Поздравление -->
     <div class="page2" id="page2">
-        <a class="back-link" id="back-link">← Вернуться на главную</a>
+        <div class="top-bar">
+            <a class="back-link" id="back-link">← Вернуться на главную</a>
+            <button class="sound-toggle" id="sound-toggle">♪ ЗВУК ВКЛ</button>
+        </div>
         <div class="congrats-title">Добро пожаловать <br> в новый год твоей жизни!</div>
         <div class="congrats-text">
             Тебя ждут увлекательные путешествия, новые локации для отдыха, интересные люди,
-            непредсказуемые, но исключительно позитивные события! <br> За плечами много серьезных побед, но впереди ещё больше амбициозных целей. <br> Пусть этот год станет идеальной взлётной полосой перед красивым юбилеем!<br> Итак, пристегните ремни, мы взлетаем!
+            непредсказуемые, но исключительно позитивные события!<br>
+            За плечами много серьезных побед, но впереди ещё больше амбициозных целей.<br>
+            Пусть этот год станет идеальной взлётной полосой перед красивым юбилеем!<br>
+            Итак, пристегните ремни,<br>
+            мы взлетаем!
         </div>
-        <div class="lens-button" id="lens-button" title="Открыть галерею">
-            <div class="lens-inner"></div>
-        </div>
-        <div class="lens-label">ОБЪЕКТИВ</div>
-        <div class="easter-gallery" id="easter-gallery">
-            <div class="easter-item"><img
-                    src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 150 150'%3E%3Crect width='150' height='150' fill='%23222'/%3E%3Ctext x='75' y='75' text-anchor='middle' fill='%2300ff41' font-size='14' font-family='monospace'%3EПасхалка 1%3C/text%3E%3C/svg%3E"
-                    alt="Easter egg 1">
-                <p class="easter-caption">Надпись 1</p>
-            </div>
-            <div class="easter-item"><img
-                    src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 150 150'%3E%3Crect width='150' height='150' fill='%23222'/%3E%3Ctext x='75' y='75' text-anchor='middle' fill='%2300ff41' font-size='14' font-family='monospace'%3EПасхалка 2%3C/text%3E%3C/svg%3E"
-                    alt="Easter egg 2">
-                <p class="easter-caption">Надпись 2</p>
-            </div>
-            <div class="easter-item"><img
-                    src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 150 150'%3E%3Crect width='150' height='150' fill='%23222'/%3E%3Ctext x='75' y='75' text-anchor='middle' fill='%2300ff41' font-size='14' font-family='monospace'%3EПасхалка 3%3C/text%3E%3C/svg%3E"
-                    alt="Easter egg 3">
-                <p class="easter-caption">Надпись 3</p>
-            </div>
-            <div class="easter-item"><img
-                    src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 150 150'%3E%3Crect width='150' height='150' fill='%23222'/%3E%3Ctext x='75' y='75' text-anchor='middle' fill='%2300ff41' font-size='14' font-family='monospace'%3EПасхалка 4%3C/text%3E%3C/svg%3E"
-                    alt="Easter egg 4">
-                <p class="easter-caption">Надпись 4</p>
-            </div>
-            <div class="easter-item"><img
-                    src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 150 150'%3E%3Crect width='150' height='150' fill='%23222'/%3E%3Ctext x='75' y='75' text-anchor='middle' fill='%2300ff41' font-size='14' font-family='monospace'%3EПасхалка 5%3C/text%3E%3C/svg%3E"
-                    alt="Easter egg 5">
-                <p class="easter-caption">Надпись 5</p>
-            </div>
-            <div class="easter-item"><img
-                    src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 150 150'%3E%3Crect width='150' height='150' fill='%23222'/%3E%3Ctext x='75' y='75' text-anchor='middle' fill='%2300ff41' font-size='14' font-family='monospace'%3EПасхалка 6%3C/text%3E%3C/svg%3E"
-                    alt="Easter egg 6">
-                <p class="easter-caption">Надпись 6</p>
-            </div>
-            <div class="easter-item"><img
-                    src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 150 150'%3E%3Crect width='150' height='150' fill='%23222'/%3E%3Ctext x='75' y='75' text-anchor='middle' fill='%2300ff41' font-size='14' font-family='monospace'%3EПасхалка 7%3C/text%3E%3C/svg%3E"
-                    alt="Easter egg 7">
-                <p class="easter-caption">Надпись 7</p>
-            </div>
+
+        <!-- Заяц -->
+        <div class="rabbit-area">
+            <div id="easter-rabbit" title="Нажми на зайца!">🐇</div>
+            <div class="rabbit-label">НАЖМИ НА ЗАЙЦА</div>
         </div>
     </div>
 
     <script>
-        (function () {
+        (function() {
             // ============================================
-            // 1. ФОН МАТРИЦЫ (дождь из символов)
+            // 1. ФОН МАТРИЦЫ
             // ============================================
             const canvas = document.getElementById('matrixCanvas');
             const ctx = canvas.getContext('2d');
@@ -555,7 +561,8 @@
             window.addEventListener('resize', resizeCanvas);
             resizeCanvas();
 
-            const chars = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789ABCDEF';
+            const chars =
+                'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789ABCDEF';
             const fontSize = 16;
             let columns = Math.floor(canvas.width / fontSize) + 1;
             let drops = Array(columns).fill(0);
@@ -583,41 +590,14 @@
             drawMatrix();
 
             // ============================================
-            // 2. ЗВУКИ (Web Audio API)
+            // 2. ЗВУКИ (глубокие терминальные)
             // ============================================
             let audioCtx = null;
 
             function initAudio() {
                 if (!audioCtx) {
-                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    audioCtx = new(window.AudioContext || window.webkitAudioContext)();
                 }
-            }
-
-            function playMatrixBeep(frequency = 800, duration = 0.08, volume = 0.15) {
-                if (!audioCtx) return;
-                try {
-                    const now = audioCtx.currentTime;
-                    const osc = audioCtx.createOscillator();
-                    const gain = audioCtx.createGain();
-                    osc.type = 'sine';   // ← ИСПРАВЛЕНО: было 'ssine'
-                    osc.frequency.setValueAtTime(frequency, now);
-                    osc.frequency.exponentialRampToValueAtTime(frequency * 0.8, now + duration);
-                    gain.gain.setValueAtTime(volume, now);
-                    gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
-                    osc.connect(gain);
-                    gain.connect(audioCtx.destination);
-                    osc.start(now);
-                    osc.stop(now + duration);
-                } catch (e) {
-                    // игнорируем ошибки аудио
-                }
-            }
-
-            function playLoadingSequence() {
-                const freqs = [600, 800, 1000, 1200, 900, 700, 1100, 950];
-                freqs.forEach((freq, i) => {
-                    setTimeout(() => playMatrixBeep(freq, 0.06, 0.12), i * 120);
-                });
             }
 
             function playOkSound() {
@@ -627,39 +607,75 @@
                     const osc = audioCtx.createOscillator();
                     const gain = audioCtx.createGain();
                     osc.type = 'triangle';
-                    osc.frequency.setValueAtTime(1200, now);
-                    osc.frequency.exponentialRampToValueAtTime(1600, now + 0.1);
-                    gain.gain.setValueAtTime(0.2, now);
-                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+                    osc.frequency.setValueAtTime(180, now);
+                    osc.frequency.exponentialRampToValueAtTime(60, now + 0.15);
+                    gain.gain.setValueAtTime(0.3, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
                     osc.connect(gain);
                     gain.connect(audioCtx.destination);
                     osc.start(now);
-                    osc.stop(now + 0.1);
-                } catch (e) {
-                    // игнорируем
-                }
+                    osc.stop(now + 0.15);
+                } catch (e) {}
+            }
+
+            function playLoadingSequence() {
+                const freqs = [150, 180, 220, 260, 200, 170, 240, 210];
+                freqs.forEach((freq, i) => {
+                    setTimeout(() => {
+                        if (!audioCtx) return;
+                        try {
+                            const now = audioCtx.currentTime;
+                            const osc = audioCtx.createOscillator();
+                            const gain = audioCtx.createGain();
+                            osc.type = 'triangle';
+                            osc.frequency.setValueAtTime(freq, now);
+                            osc.frequency.exponentialRampToValueAtTime(freq * 0.6, now + 0.1);
+                            gain.gain.setValueAtTime(0.2, now);
+                            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+                            osc.connect(gain);
+                            gain.connect(audioCtx.destination);
+                            osc.start(now);
+                            osc.stop(now + 0.1);
+                        } catch (e) {}
+                    }, i * 150);
+                });
             }
 
             function playActivationSound() {
                 if (!audioCtx) return;
                 try {
                     const now = audioCtx.currentTime;
-                    for (let i = 0; i < 5; i++) {
+                    for (let i = 0; i < 4; i++) {
                         const osc = audioCtx.createOscillator();
                         const gain = audioCtx.createGain();
-                        osc.type = 'sine';
-                        osc.frequency.setValueAtTime(400 + i * 200, now + i * 0.1);
-                        osc.frequency.exponentialRampToValueAtTime(100, now + i * 0.1 + 0.15);
-                        gain.gain.setValueAtTime(0.25, now + i * 0.1);
-                        gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.1 + 0.15);
+                        osc.type = 'triangle';
+                        osc.frequency.setValueAtTime(120 + i * 60, now + i * 0.15);
+                        osc.frequency.exponentialRampToValueAtTime(40, now + i * 0.15 + 0.25);
+                        gain.gain.setValueAtTime(0.35, now + i * 0.15);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.15 + 0.25);
                         osc.connect(gain);
                         gain.connect(audioCtx.destination);
-                        osc.start(now + i * 0.1);
-                        osc.stop(now + i * 0.1 + 0.15);
+                        osc.start(now + i * 0.15);
+                        osc.stop(now + i * 0.15 + 0.25);
                     }
-                } catch (e) {
-                    // игнорируем
-                }
+                } catch (e) {}
+            }
+
+            function playUnlockBeep() {
+                if (!audioCtx) return;
+                try {
+                    const now = audioCtx.currentTime;
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(200, now);
+                    gain.gain.setValueAtTime(0.05, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.05);
+                } catch (e) {}
             }
 
             // ============================================
@@ -703,14 +719,10 @@
 
             async function runBootSequence() {
                 if (!logContainer) return;
-
-                // Очищаем предыдущие логи
                 logContainer.innerHTML = '';
                 progressBarContainer.classList.add('visible');
                 progressBarFill.style.width = '0%';
                 activateBtn.classList.remove('visible');
-
-                // Инициализируем аудио при первом взаимодействии
                 initAudio();
                 playLoadingSequence();
 
@@ -718,49 +730,37 @@
                 for (let i = 0; i < totalLines; i++) {
                     const line = createLogLine(systemLogs[i], i > 0);
                     logContainer.appendChild(line);
-
-                    // Задержка перед показом строки
                     await new Promise(resolve => setTimeout(resolve, 350 + Math.random() * 200));
-
-                    // Показываем строку
                     line.classList.add('visible');
-
-                    // Если есть индикатор ОК, показываем его с задержкой
                     const okIndicator = line.querySelector('.ok-indicator');
                     if (okIndicator) {
                         await new Promise(resolve => setTimeout(resolve, 250 + Math.random() * 150));
                         okIndicator.classList.add('show');
                         playOkSound();
                     }
-
-                    // Обновляем прогресс-бар
                     const progress = ((i + 1) / totalLines) * 100;
                     progressBarFill.style.width = progress + '%';
-
-                    // Небольшая пауза между строками
                     await new Promise(resolve => setTimeout(resolve, 150));
                 }
 
-                // Завершение загрузки
                 await new Promise(resolve => setTimeout(resolve, 600));
                 progressBarFill.style.width = '100%';
                 playActivationSound();
-
-                // Показываем кнопку
                 await new Promise(resolve => setTimeout(resolve, 400));
                 activateBtn.classList.add('visible');
             }
 
             // ============================================
-            // 4. ПЕРЕХОД МЕЖДУ СТРАНИЦАМИ
+            // 4. ПЕРЕХОД МЕЖДУ СТРАНИЦАМИ + АУДИО
             // ============================================
             const page1 = document.getElementById('page1');
             const page2 = document.getElementById('page2');
             const backLink = document.getElementById('back-link');
-            const lensButton = document.getElementById('lens-button');
-            const easterGallery = document.getElementById('easter-gallery');
+            const soundToggle = document.getElementById('sound-toggle');
+            const easterRabbit = document.getElementById('easter-rabbit');
 
             let bgAudio = null;
+            let audioEnabled = true;
 
             function createAudioElement() {
                 if (!bgAudio) {
@@ -768,7 +768,7 @@
                     bgAudio.id = 'bg-audio';
                     bgAudio.loop = true;
                     bgAudio.volume = 0.5;
-                    bgAudio.src = 'images/a1.mp3'; // Установите путь к аудиофайлу позже
+                    bgAudio.src = 'images/cl.mp3';
                     document.body.appendChild(bgAudio);
                 }
                 return bgAudio;
@@ -779,11 +779,11 @@
                 page2.classList.add('active');
 
                 const audio = createAudioElement();
-                if (audio.src && audio.src !== window.location.href && audio.src !== '') {
+                if (audioEnabled && audio.src && audio.src !== window.location.href && audio.src !== '') {
                     audio.currentTime = 0;
                     audio.play().catch(e => console.log('Аудио не может воспроизвестись:', e));
                 }
-
+                updateSoundButton();
                 launchConfetti();
                 window.scrollTo(0, 0);
             }
@@ -797,92 +797,205 @@
                     bgAudio.currentTime = 0;
                 }
 
-                easterGallery.classList.remove('open');
+                stopAllEasterEggs();
+                stopConfetti();
                 runBootSequence();
                 window.scrollTo(0, 0);
             }
 
+            function toggleSound() {
+                audioEnabled = !audioEnabled;
+                const audio = createAudioElement();
+                if (audioEnabled) {
+                    audio.play().catch(e => {});
+                } else {
+                    audio.pause();
+                }
+                updateSoundButton();
+            }
+
+            function updateSoundButton() {
+                soundToggle.textContent = audioEnabled ? '♪ ЗВУК ВКЛ' : '♪ ЗВУК ВЫКЛ';
+                soundToggle.style.color = audioEnabled ? 'var(--matrix-green)' : '#555';
+                soundToggle.style.borderColor = audioEnabled ? 'var(--matrix-green)' : '#555';
+            }
+
             activateBtn.addEventListener('click', goToPage2);
             backLink.addEventListener('click', goToPage1);
-
-            lensButton.addEventListener('click', () => {
-                easterGallery.classList.toggle('open');
-                if (easterGallery.classList.contains('open')) {
-                    playOkSound();
-                }
-            });
+            soundToggle.addEventListener('click', toggleSound);
 
             // ============================================
-            // 5. КОНФЕТТИ
+            // 5. КОНФЕТТИ (БЕСКОНЕЧНЫЕ)
             // ============================================
+            let confettiInterval = null;
+
             function launchConfetti() {
+                if (confettiInterval) return;
                 const colors = ['#00ff41', '#ffcc00', '#ff6600', '#00ccff', '#ff3399', '#ffffff'];
-                const container = document.body;
 
-                for (let i = 0; i < 150; i++) {
-                    setTimeout(() => {
-                        const confetti = document.createElement('div');
-                        confetti.style.position = 'fixed';
-                        confetti.style.zIndex = '9999';
-                        confetti.style.pointerEvents = 'none';
-                        confetti.style.left = Math.random() * 100 + '%';
-                        confetti.style.top = '-20px';
-                        confetti.style.width = (Math.random() * 10 + 6) + 'px';
-                        confetti.style.height = (Math.random() * 6 + 4) + 'px';
-                        confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
-                        confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
-                        confetti.style.transform = 'rotate(' + Math.random() * 360 + 'deg)';
-                        container.appendChild(confetti);
+                function spawnConfetti() {
+                    const confetti = document.createElement('div');
+                    confetti.style.position = 'fixed';
+                    confetti.style.zIndex = '50';
+                    confetti.style.pointerEvents = 'none';
+                    confetti.style.left = Math.random() * 100 + '%';
+                    confetti.style.top = '-20px';
+                    confetti.style.width = (Math.random() * 10 + 6) + 'px';
+                    confetti.style.height = (Math.random() * 6 + 4) + 'px';
+                    confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+                    document.body.appendChild(confetti);
 
-                        // Анимация падения
-                        const fallDuration = Math.random() * 3000 + 2000;
-                        const horizontalDrift = (Math.random() - 0.5) * 200;
+                    const fallDuration = Math.random() * 3000 + 2000;
+                    const horizontalDrift = (Math.random() - 0.5) * 200;
 
-                        confetti.animate([
-                            { top: '-20px', opacity: 1, transform: 'rotate(0deg) translateX(0px)' },
-                            { top: '110vh', opacity: 0, transform: 'rotate(' + (Math.random() * 720) + 'deg) translateX(' + horizontalDrift + 'px)' }
-                        ], {
-                            duration: fallDuration,
-                            easing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-                            fill: 'forwards'
-                        }).onfinish = () => {
-                            confetti.remove();
-                        };
-                    }, i * 20);
+                    confetti.animate([
+                        { top: '-20px', opacity: 1, transform: 'rotate(0deg) translateX(0px)' },
+                        { top: '110vh', opacity: 0,
+                            transform: 'rotate(' + (Math.random() * 720) + 'deg) translateX(' + horizontalDrift +
+                            'px)' }
+                    ], {
+                        duration: fallDuration,
+                        easing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+                        fill: 'forwards'
+                    }).onfinish = () => confetti.remove();
+                }
+
+                confettiInterval = setInterval(() => {
+                    const count = Math.floor(Math.random() * 3) + 1;
+                    for (let i = 0; i < count; i++) spawnConfetti();
+                }, 100);
+            }
+
+            function stopConfetti() {
+                if (confettiInterval) {
+                    clearInterval(confettiInterval);
+                    confettiInterval = null;
                 }
             }
 
             // ============================================
+            // 6. ПАСХАЛКИ: ЗАЯЦ + КАРТОЧКИ
             // ============================================
-            // 6. РАЗБЛОКИРОВКА ЗВУКА И СТАРТ
+            const easterData = [
+                { img: "images/1.jfif", text: "Ну посмотри, как же это прекрасно..." },
+                { img: "images/2.jfif", text: "сколько у тебя было" },
+                { img: "images/3.jfif", text: "красивых моментов..." },
+                { img: "images/4.jfif", text: "изумительные рассветы и закаты..." },
+                { img: "images/5.jfif", text: "ведь счастье в мелочах" },
+                { img: "images/6.jfif", text: "порой мы забываем об этом" },
+                { img: "images/7.jfif", text: "но ты же помнишь" },
+                { img: "images/8.jfif", text: "каждый день неповторим)" },
+                { img: "images/9.jfif", text: "и пусть порой встречаются трудности" },
+                { img: "images/10.jfif", text: "их просто нужно пережить" },
+                { img: "images/11.jfif", text: "всё будет хорошо" },
+                { img: "images/12.jfif", text: "и тебя ждут новые прекрасные моменты" },
+                { img: "images/13.jfif", text: "не забывай об этом" },
+            ];
+
+            let easterActive = false;
+            const easterTimers = [];
+
+            function getSafePosition(elWidth, elHeight) {
+                const padding = 20;
+                const maxX = window.innerWidth - elWidth - padding;
+                const maxY = window.innerHeight - elHeight - padding;
+                const x = Math.max(padding, Math.random() * maxX);
+                const y = Math.max(padding, Math.random() * maxY);
+                return { x, y };
+            }
+
+            function spawnEasterEggs() {
+                // Очищаем предыдущие
+                stopAllEasterEggs();
+
+                easterActive = true;
+                playOkSound();
+
+                // 13 карточек с интервалом 4 секунды
+                easterData.forEach((item, index) => {
+                    const spawnTimer = setTimeout(() => {
+                        if (!easterActive) return;
+
+                        const el = document.createElement('div');
+                        el.className = 'easter-obj';
+
+                        const cardWidth = 160;
+                        const cardHeight = 220;
+                        const pos = getSafePosition(cardWidth, cardHeight);
+
+                        el.style.left = pos.x + 'px';
+                        el.style.top = pos.y + 'px';
+
+                        el.innerHTML = `
+                            <img src="${item.img}" alt="">
+                            <div class="caption">${item.text}</div>
+                        `;
+
+                        document.body.appendChild(el);
+
+                        const removeTimer = setTimeout(() => el.remove(), 8000);
+                        easterTimers.push(removeTimer);
+                    }, index * 4000);
+
+                    easterTimers.push(spawnTimer);
+                });
+
+                // 14-я центральная карточка через 52 секунды (13 × 4)
+                const centerTimer = setTimeout(() => {
+                    if (!easterActive) return;
+
+                    const centerCard = document.createElement('div');
+                    centerCard.className = 'center-card';
+
+                    centerCard.innerHTML = `
+                        <img src="images/14.jfif" alt="">
+                        <div class="caption">🎉 С днём рождения! 🎉</div>
+                    `;
+
+                    document.body.appendChild(centerCard);
+
+                    const removeCenterTimer = setTimeout(() => centerCard.remove(), 5000);
+                    easterTimers.push(removeCenterTimer);
+
+                    // Сбрасываем флаг через 5 секунд после появления центральной карточки
+                    const resetTimer = setTimeout(() => {
+                        easterActive = false;
+                    }, 5000);
+                    easterTimers.push(resetTimer);
+
+                }, easterData.length * 4000);
+
+                easterTimers.push(centerTimer);
+            }
+
+            function stopAllEasterEggs() {
+                easterActive = false;
+                easterTimers.forEach(timer => clearTimeout(timer));
+                easterTimers.length = 0;
+                document.querySelectorAll('.easter-obj, .center-card').forEach(el => el.remove());
+            }
+
+            // Привязка зайца — каждый клик запускает новый цикл
+            easterRabbit.addEventListener('click', spawnEasterEggs);
+
+            // ============================================
+            // 7. РАЗБЛОКИРОВКА ЗВУКА И СТАРТ
             // ============================================
             const audioUnlockOverlay = document.getElementById('audio-unlock-overlay');
 
             function startBootWithAudio() {
-                // Инициализируем и разблокируем аудиоконтекст
                 initAudio();
-                // Воспроизводим тихий звук для разблокировки (обязательно внутри обработчика клика)
                 if (audioCtx && audioCtx.state === 'suspended') {
                     audioCtx.resume();
                 }
-                // Тихая нота для активации
-                playMatrixBeep(100, 0.01, 0.01);
-
-                // Скрываем оверлей
+                 playUnlockBeep();
                 audioUnlockOverlay.style.display = 'none';
-
-                // Запускаем загрузку
-                setTimeout(() => {
-                    runBootSequence();
-                }, 300);
+                setTimeout(() => runBootSequence(), 300);
             }
 
             audioUnlockOverlay.addEventListener('click', startBootWithAudio);
 
-            // На случай, если пользователь нажал кнопку раньше (не должно случиться, но подстрахуем)
-            window.addEventListener('load', () => {
-                // Ждём клика — загрузка начнётся только после взаимодействия
-            });
         })();
     </script>
 </body>
